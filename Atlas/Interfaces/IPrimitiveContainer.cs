@@ -4,13 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Components
+namespace Atlas.Interfaces
 {
-    internal class P1_3 : BaseItem
+    internal interface IPrimitiveContainer
     {
-        public P1_3()
-        {
-            Value = "P1_3";
-        }
+        List<IRenderable> Children { get; }
     }
 }

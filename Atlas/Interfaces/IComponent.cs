@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Atlas.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,5 +9,8 @@ namespace Atlas.Interfaces
 {
     internal interface IComponent : IRenderable
     {
+        void BuildRenderTree(RenderTreeBuilder builder);
+        void OnInitialized();
+        Task OnInitializedAsync();
     }
 }

@@ -1,6 +1,7 @@
 ﻿using Atlas.Components;
 using Atlas.Core.Render;
 using Atlas.Interfaces;
+using System.Diagnostics;
 
 namespace Atlas.Core
 {
@@ -9,38 +10,96 @@ namespace Atlas.Core
         private Renderer Renderer;
         private RenderTreeNode currentNode;
         private RenderTreeNode parentNode;
+        private Dictionary<IRenderable, RenderTreeNode> lookupNodes;
+        private long treeGeneration = 0;
 
-        public RenderTreeNode tree;
+        public RenderTreeNode RenderTree { get; private set; }
         public RenderTreeBuilder(Renderer renderer)
         {
             Renderer = renderer;
-            tree = new RenderTreeNode(new Root());
-            parentNode = tree;
+            RenderTree = new RenderTreeNode(new VirtualRoot());
+            RenderTree.IsInitialized = true;
+            parentNode = RenderTree;
+            lookupNodes = new Dictionary<IRenderable, RenderTreeNode>();
         }
 
-        public void AddContent(BaseItem item)
+        public void AddContent(IRenderable renderable)
         {
-            currentNode = new RenderTreeNode(item);
-            currentNode.Parent = parentNode;
-
-            if (parentNode is not null)
-            { 
-                parentNode.AddChildren(currentNode);
+            if (lookupNodes.TryGetValue(renderable, out RenderTreeNode node))
+            {
+                currentNode = node;
+                currentNode.IsNew = false;
+            }
+            else
+            {
+                currentNode = new RenderTreeNode(renderable);
+                currentNode.IsNew = true;
+                currentNode.Parent = parentNode;
+                parentNode.Children.Add(currentNode);
+                
+                lookupNodes.Add(renderable, currentNode);
             }
 
-            RenderTreeNode? prevParent = null;
+            currentNode.Generation = treeGeneration;
 
-            if(item is IComponent || item is IRenderableContainer)
+            RenderTreeNode preRecursionParent = parentNode;
+
+            if (renderable is IPrimitiveContainer container)
             {
-                prevParent = parentNode;
                 parentNode = currentNode;
+
+                foreach (var child in container.Children)
+                {
+                    AddContent(child);
+                }
+            }
+            else if (renderable is IComponent component)
+            {
+                parentNode = currentNode;
+                if (currentNode.IsNew && currentNode.IsInitialized == false)
+                {
+                    currentNode.IsInitialized = true;
+                    Renderer.EnqueueComponentInitialization(component);
+                }
+                component.BuildRenderTree(this);
             }
 
-            item.BuildRenderTree(this);
-            if (prevParent is not null)
-            {
-                parentNode = prevParent;
-            }
+            parentNode = preRecursionParent;
         }
+        internal void UpdateTree(List<IRenderable> children)
+        {
+            //if (!RenderTree.IsDirty)
+            //{
+            //    return;
+            //}
+
+            foreach (var component in children)
+            {
+                AddContent(component);
+            }
+
+            var unmountNodes = lookupNodes
+                .Where(x => x.Value.Generation != treeGeneration)
+                .Select(x => x.Key)
+                .ToList();
+
+            foreach (var key in unmountNodes)
+            {
+                Debugger.Break();
+                var unmountNode = lookupNodes[key];
+                unmountNode?.Parent?.Children.Remove(unmountNode);
+                if (unmountNode?.Value is IComponent component)
+                {
+                    Renderer.EnqueueComponentDisposal(component);
+                }
+                lookupNodes.Remove(key);
+            }
+            treeGeneration++;
+        }
+    }
+
+    file class VirtualRoot : IRenderable, IPrimitiveContainer
+    {
+        public List<IRenderable> Children { get; } = new List<IRenderable>();
     }
 }

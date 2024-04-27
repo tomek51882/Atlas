@@ -4,13 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Components
+namespace Atlas.Interfaces
 {
-    internal class P3 : BaseItem
+    internal interface IDiagnostics
     {
-        public P3()
-        {
-            Value = "P3";
-        }
     }
 }

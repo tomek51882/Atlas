@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Atlas.Interfaces
 {
-    internal interface IRenderableContainer : IRenderable
+    internal interface IWindowable : IPrimitive
     {
+        bool IsFocused { get; }
+        string? Title { get; }
     }
 }

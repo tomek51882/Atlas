@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 ArgsParser.Parse(args);
-
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureLogging((context, logger) =>
     {

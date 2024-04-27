@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Atlas.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace Atlas.Interfaces
 {
     internal interface IPrimitive : IRenderable
     {
-
+        Rect Rect { get; }
     }
 }

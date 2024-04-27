@@ -1,4 +1,5 @@
 ﻿
+using Atlas.Components;
 using Atlas.Interfaces;
 using Atlas.Services;
 using Microsoft.Extensions.Hosting;
@@ -18,8 +19,11 @@ namespace Atlas.Core
         private IWindowService _windowService;
         public Engine(IRenderer renderer, IWindowService windowService)
         {
-            Console.Write("\x1b[?1049h");
             Console.CursorVisible = false;
+            Console.Write("\x1b[?1049h");
+            Console.SetCursorPosition(0, 0);
+            Console.InputEncoding = Encoding.UTF8;
+            Console.OutputEncoding = Encoding.UTF8;
 
             this._renderer = renderer;
             this._windowService = windowService;
@@ -28,38 +32,25 @@ namespace Atlas.Core
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Stopwatch stopwatch = new Stopwatch();
-            double targetInterval = 1000.0 / 60.0;
+            double targetInterval = 1000.0 / 60.0; // 1000ms / 60fps = frame duration
+            PeriodicTimer timer = new PeriodicTimer(TimeSpan.FromMilliseconds(targetInterval));
 
             WindowService ws = Unsafe.As<WindowService>(_windowService);
-            //ws.CreateWindow<TestComponent>();
-            //windowService
+            ws.CreateWindow<TestComponent>();
 
             try
             {
-                while (!stoppingToken.IsCancellationRequested)
+                while (await timer.WaitForNextTickAsync(stoppingToken))
                 {
-                    //==========================================================================
-                    //stopwatch.Restart();
-
-                    ////inputController.Update();
-                    ////componentsController.Update();
-                    ////diagnosticsController.Update();
                     _renderer.Update();
-
-                    //stopwatch.Stop();
-
-                    //int delay = (int)(targetInterval - stopwatch.ElapsedMilliseconds);
-                    //if (delay > 0)
-                    //{
-                    //    await Task.Delay(delay);
-                    //}
-
-                    //==========================================================================
-                    //await Task.Delay(200);
-
-                    var key = Console.ReadKey(true);
                 }
+                //while (!stoppingToken.IsCancellationRequested)
+                //{
+                //    _renderer.Update();
+                //    var key = Console.ReadKey(true);
+                //}
             }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 Console.Write("\x1b[?1049l");
@@ -71,8 +62,8 @@ namespace Atlas.Core
 
         public override void Dispose()
         {
-            base.Dispose();
             Console.Write("\x1b[?1049l");
+            base.Dispose();
         }
     }
 }
