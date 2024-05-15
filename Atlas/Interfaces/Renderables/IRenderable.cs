@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Interfaces
+namespace Atlas.Interfaces.Renderables
 {
-    internal interface IPrimitiveContainer
+    internal interface IRenderable
     {
-        List<IRenderable> Children { get; }
     }
 }

@@ -1,31 +1,45 @@
-﻿using Atlas.Components;
-using Atlas.Core.Render;
-using Atlas.Interfaces;
-using System.Diagnostics;
+﻿using Atlas.Core.Render;
+using Atlas.Core.Styles;
+using Atlas.Interfaces.Renderables;
+using Atlas.Types;
 
 namespace Atlas.Core
 {
     internal class RenderTreeBuilder
     {
         private Renderer Renderer;
-        private RenderTreeNode currentNode;
+        private RenderTreeNode? currentNode;
         private RenderTreeNode parentNode;
         private Dictionary<IRenderable, RenderTreeNode> lookupNodes;
         private long treeGeneration = 0;
 
-        public RenderTreeNode RenderTree { get; private set; }
+        internal RenderTreeNode RenderTree { get; private set; }
+        internal IPrimitive RenderTreeRoot { get; private set; }
+
         public RenderTreeBuilder(Renderer renderer)
         {
             Renderer = renderer;
-            RenderTree = new RenderTreeNode(new VirtualRoot());
+            var root = new VirtualRoot();
+            RenderTreeRoot = root;
+            RenderTree = new RenderTreeNode(RenderTreeRoot);
             RenderTree.IsInitialized = true;
+
             parentNode = RenderTree;
             lookupNodes = new Dictionary<IRenderable, RenderTreeNode>();
         }
-
-        public void AddContent(IRenderable renderable)
+        public void AddContent(IRenderable? renderable)
         {
-            if (lookupNodes.TryGetValue(renderable, out RenderTreeNode node))
+            if (renderable is null)
+            {
+                return;
+            }
+
+            //if (renderable is IPrimitiveProxy<IRenderable> proxy)
+            //{
+            //    renderable = proxy.Value;
+            //}
+
+            if (lookupNodes.TryGetValue(renderable, out RenderTreeNode? node))
             {
                 currentNode = node;
                 currentNode.IsNew = false;
@@ -44,7 +58,7 @@ namespace Atlas.Core
 
             RenderTreeNode preRecursionParent = parentNode;
 
-            if (renderable is IPrimitiveContainer container)
+            if (renderable is IRenderableContainer container)
             {
                 parentNode = currentNode;
 
@@ -52,6 +66,11 @@ namespace Atlas.Core
                 {
                     AddContent(child);
                 }
+            }
+            else if (renderable is IWindowable window)
+            {
+                parentNode = currentNode;
+                AddContent(window.Component);
             }
             else if (renderable is IComponent component)
             {
@@ -68,6 +87,7 @@ namespace Atlas.Core
         }
         internal void UpdateTree(List<IRenderable> children)
         {
+            //Update only if something changed
             //if (!RenderTree.IsDirty)
             //{
             //    return;
@@ -85,7 +105,7 @@ namespace Atlas.Core
 
             foreach (var key in unmountNodes)
             {
-                Debugger.Break();
+                //Debugger.Break();
                 var unmountNode = lookupNodes[key];
                 unmountNode?.Parent?.Children.Remove(unmountNode);
                 if (unmountNode?.Value is IComponent component)
@@ -98,8 +118,26 @@ namespace Atlas.Core
         }
     }
 
-    file class VirtualRoot : IRenderable, IPrimitiveContainer
+    file class VirtualRoot : IPrimitive, IRenderableContainer
     {
         public List<IRenderable> Children { get; } = new List<IRenderable>();
+        public Rect Rect { get; set; }
+        public StyleProperties StyleProperties { get; set; }
+
+        internal VirtualRoot()
+        {
+            //Temp
+            Rect = new Rect(0,0, Console.BufferWidth, Console.BufferHeight);
+        }
+
+        public void AddElement(IRenderable child)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveElement(IRenderable child)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,21 +1,25 @@
-﻿using Atlas.Interfaces;
+﻿using Atlas.Core.Styles;
+using Atlas.Interfaces.Renderables;
 using Atlas.Types;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Atlas.Primitives
 {
-    internal class Container : IPrimitive, IPrimitiveContainer
+    internal class Container : IPrimitive, IRenderableContainer
     {
         public Rect Rect { get; set; }
         public List<IRenderable> Children {  get; private set; } = new List<IRenderable>();
+        public StyleProperties StyleProperties { get; set; } = new StyleProperties();
 
-        public Container()
+        public Container(){ }
+
+        public void AddElement(IRenderable child)
         {
-            
+            Children.Add(child);
+        }
+
+        public void RemoveElement(IRenderable child)
+        {
+            Children.Remove(child);
         }
     }
 }

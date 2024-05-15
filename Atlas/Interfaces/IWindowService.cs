@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using Atlas.Interfaces.Renderables;
+using Atlas.Types;
 
 namespace Atlas.Interfaces
 {
     internal interface IWindowService
     {
+        (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle) where T : IComponent, new();
     }
 }

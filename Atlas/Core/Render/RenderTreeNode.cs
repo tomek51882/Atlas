@@ -1,6 +1,6 @@
 ﻿
 using Atlas.Components;
-using Atlas.Interfaces;
+using Atlas.Interfaces.Renderables;
 
 namespace Atlas.Core.Render
 {

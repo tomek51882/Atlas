@@ -1,8 +1,6 @@
-﻿using Atlas.Components;
+﻿using Atlas.Extensions;
 using Atlas.Types;
 using Atlas.Types.Windows;
-using CommunityToolkit.HighPerformance;
-using CommunityToolkit.HighPerformance.Buffers;
 using System.Text;
 
 namespace Atlas.Core.Render
@@ -19,6 +17,8 @@ namespace Atlas.Core.Render
         private Color lastBgColor = Color.DefaultBackground;
         private StringBuilder stringBuilder = new StringBuilder();
 
+        //private Memory<CharInfo> buffer;
+
         internal DisplayBuffer(int width, int height)
         {
             this.width = width;
@@ -26,8 +26,9 @@ namespace Atlas.Core.Render
             cursorX = 0;
             cursorY = 0;
             displayBuffer = new CharInfo[width, height];
+            //buffer = new Memory<CharInfo>();
         }
-
+         
         internal void Flush()
         {
 
@@ -138,16 +139,42 @@ namespace Atlas.Core.Render
 
         internal void WriteText(RenderContext context, Rect bounds, string input, Color fgColor, Color bgColor)
         {
+            if (input is null)
+            {
+                return;
+            }
+            bounds = bounds.RelativeToAbsolute(context.AbsoluteBounds);
             
+            SetCursor(bounds.x, bounds.y);
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (cursorX >= bounds.x + bounds.width || cursorX >= context.AbsoluteBounds.x + context.AbsoluteBounds.width)
+                {
+                    return;
+                }
+                if (displayBuffer[cursorX, cursorY].Char == '\0')
+                {
+                    if (context.__ExperimentalInvertColors)
+                    {
+                        displayBuffer[cursorX, cursorY] = new CharInfo(input[i], bgColor , fgColor);
+                    }
+                    else
+                    { 
+                        displayBuffer[cursorX, cursorY] = new CharInfo(input[i], fgColor, bgColor);
+                    }
+                }
+                cursorX++;
+            }
         }
 
         internal void ForceWriteText(RenderContext context, Rect bounds, string input, Color fgColor, Color bgColor)
         {
             //int freeSpace = bounds.width = input.Length;
+            bounds = bounds.RelativeToAbsolute(context.AbsoluteBounds);
             SetCursor(bounds.x, bounds.y);
             for (int i = 0; i < input.Length; i++)
             {
-                if (cursorX >= bounds.width)
+                if (cursorX >= bounds.x+bounds.width || cursorX >= context.AbsoluteBounds.x + context.AbsoluteBounds.width)
                 {
                     return;
                 }
@@ -161,9 +188,39 @@ namespace Atlas.Core.Render
         }
         internal void FillEmptyArea(RenderContext context, Rect bounds, Color fillColor)
         {
+            bounds = bounds.RelativeToAbsolute(context.AbsoluteBounds);
+            for (int y = bounds.y; y < bounds.y + bounds.height; y++)
+            {
+                if (y < 0)
+                {
+                    continue;
+                }
+                if (y > height)
+                {
+                    break;
+                }
 
+                for (int x = bounds.x; x < bounds.x + bounds.width; x++)
+                {
+                    if (displayBuffer[x, y].Char == '\0')
+                    {
+                        displayBuffer[x, y].Char = ' ';
+                        if (context.__ExperimentalInvertColors)
+                        {
+
+                            displayBuffer[x, y].FgColor = fillColor;
+                            displayBuffer[x, y].BgColor = Color.DefaultForeground;
+                        }
+                        else
+                        { 
+                            displayBuffer[x, y].FgColor = Color.DefaultForeground;
+                            displayBuffer[x, y].BgColor = fillColor;
+                        }
+                    }
+                }
+            }
         }
-        internal void DrawWindowFrame(RenderContext context, Rect bounds, Color borderColor, WindowFrame frameMap, string? windowTitle)
+        internal void DrawWindow(RenderContext context, Rect bounds, Color borderColor, WindowFrame frameMap, string? windowTitle)
         {
             SetCursor(bounds.x, bounds.y);
             Write(frameMap.fragmentMap[WindowFrameFragment.TopLeft], borderColor);

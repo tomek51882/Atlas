@@ -1,6 +1,8 @@
 ﻿using Atlas.Core;
+using Atlas.Core.Render;
 using Atlas.Interfaces;
 using Atlas.Services;
+using Atlas.Systems;
 using Atlas.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -18,6 +20,7 @@ var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) => {
         services.AddSingleton<IRenderer, Renderer>();
         services.AddSingleton<IWindowService, WindowService>();
+        services.AddSingleton<IInputSystem, InputSystem>();
         services.AddHostedService<Engine>();
     });
 

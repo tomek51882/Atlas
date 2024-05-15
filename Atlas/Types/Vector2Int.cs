@@ -35,5 +35,7 @@ namespace Atlas.Types
         {
             return $"X:{x} Y:{y}";
         }
+
+        public static Vector2Int Zero => new Vector2Int(0,0);
     }
 }

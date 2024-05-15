@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Services
+namespace Atlas.Interfaces.Renderables
 {
-    internal class InputService
+    internal interface IPrimitiveText : IPrimitive
     {
+        string? Value { get; }
+
+
     }
 }

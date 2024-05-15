@@ -1,18 +1,15 @@
-﻿using Atlas.Components;
-using Atlas.Core.Render;
-using Atlas.Interfaces;
+﻿using Atlas.Interfaces;
+using Atlas.Interfaces.Renderables;
 using Atlas.Types;
 using Atlas.Types.Windows;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-namespace Atlas.Core
+namespace Atlas.Core.Render
 {
     internal class Renderer : IRenderer
     {
         private RenderTreeBuilder treeBuilder;
-        //private Queue<IRenderable> mountQueue = new Queue<IRenderable>();
         private List<IRenderable> mountedRenderables = new List<IRenderable>();
         private ConcurrentQueue<IComponent> initializationQueue = new ConcurrentQueue<IComponent>();
         private ConcurrentQueue<IComponent> disposeQueue = new ConcurrentQueue<IComponent>();
@@ -31,28 +28,58 @@ namespace Atlas.Core
 
         private void RenderElement(RenderContext context, RenderTreeNode node)
         {
-
             if (node.Value is IPrimitive renderable)
             {
                 if (renderable is IWindowable window)
                 {
                     RenderWindow(context, window);
                 }
+                if (renderable is IPrimitiveText text)
+                {
+                    RenderText(context, text);
+                }
+                if (renderable is IPrimitiveFiller filler)
+                {
+                    FillArea(context, filler);
+                }
+                if (renderable is ISelectableItem item && Unsafe.As<ISelectable>(context.Parent).SelectedItem == item)
+                {
+                    context.__ExperimentalInvertColors = true;
+                }
             }
 
-            if (node.Children != null)
+            if (node.Children?.Count > 0)
             {
+                if (node.Value is IPrimitive primitive)
+                {
+                    context.Parent = primitive;
+                }
+
                 foreach (RenderTreeNode child in node.Children)
                 {
+                    if (child.Value is IPrimitive childPrimitive && childPrimitive.Rect.IsInside(context.RelativeBounds) == false)
+                    {
+                        continue;
+                    }
                     RenderElement(context, child);
                 }
             }
         }
 
+        private void FillArea(RenderContext context, IPrimitiveFiller filler)
+        {
+            displayBuffer.FillEmptyArea(context, filler.Rect, filler.StyleProperties.BackgroundColor?.Value ?? Color.DefaultBackground);
+        }
+
+        private void RenderText(RenderContext context, IPrimitiveText text)
+        {
+            displayBuffer.WriteText(context, text.Rect, text.Value, text.StyleProperties.Color?.Value ?? Color.DefaultForeground, text.StyleProperties.BackgroundColor?.Value ?? Color.DefaultBackground);
+        }
+
         private void RenderWindow(RenderContext context, IWindowable window)
         {
             var frameMap = window.IsFocused ? WindowFrame.WindowFocused : WindowFrame.Window;
-            displayBuffer.DrawWindowFrame(context, window.Rect, Color.Red, frameMap, $" {window.Title} ");
+            displayBuffer.DrawWindow(context, window.Rect, new Color(0xee7f00), frameMap, $" {window.Title} ");
         }
 
         public void Update()
@@ -67,18 +94,27 @@ namespace Atlas.Core
 
             treeBuilder.UpdateTree(mountedRenderables);
 
-            RenderContext context = new RenderContext();
+            RenderContext context = new RenderContext(treeBuilder.RenderTreeRoot);
             RenderElement(context, treeBuilder.RenderTree);
             displayBuffer.Flush();
 
             while (disposeQueue.TryDequeue(out var component))
             {
+                if (component is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+
                 if (component is IAsyncDisposable asyncDisposable)
                 {
-                    var task = Task.Factory.StartNew((rawDisposable) =>
+                    var task = Task.Factory.StartNew(static (rawDisposable) =>
                     {
                         var disposable = rawDisposable as IAsyncDisposable;
-                        _ = disposable.DisposeAsync();
+                        if (disposable is not null)
+                        {
+                            _ = disposable.DisposeAsync();
+                        }
+
                     }, asyncDisposable);
 
                     pendingTasks.Add(task);
@@ -87,10 +123,15 @@ namespace Atlas.Core
 
             while (initializationQueue.TryDequeue(out var component))
             {
-                var task = Task.Run(() =>
+                var task = Task.Factory.StartNew(static (rawComponent) =>
                 {
-                    _ = component.OnInitializedAsync();
-                });
+                    var component = rawComponent as IComponent;
+                    if (component is not null)
+                    {
+                        _ = component.OnInitializedAsync();
+                    }
+
+                }, component);
 
                 pendingTasks.Add(task);
             }
@@ -137,7 +178,7 @@ namespace Atlas.Core
             {
                 foreach (RenderTreeNode child in node.Children)
                 {
-                    __Debug__RenderRenderableStructure(child, depth+1);
+                    __Debug__RenderRenderableStructure(child, depth + 1);
                 }
             }
         }

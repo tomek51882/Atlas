@@ -1,4 +1,5 @@
 ﻿using Atlas.Core;
+using Atlas.Interfaces.Renderables;
 using Atlas.Primitives;
 
 namespace Atlas.Components
@@ -7,10 +8,21 @@ namespace Atlas.Components
     {
         private Container container;
 
+        //NOTE: Debug Parent Window is of size 40x10
         public override void OnInitialized()
         {
             container = new Container();
-            container.Rect = new Types.Rect(12, 12, 2, 2);
+            container.Rect = new Types.Rect(0, 0, 40,10);
+            container.StyleProperties.Padding = new Core.Styles.PaddingProperty(1);
+
+            for(int i =0; i<5 ; i++)
+            {
+                var t = new Text($"Text{i}");
+                t.Rect = new Types.Rect(0,0, t.Rect.width, t.Rect.height);
+                container.Children.Add(t);
+
+                
+            }
         }
         public override void BuildRenderTree(RenderTreeBuilder builder)
         {

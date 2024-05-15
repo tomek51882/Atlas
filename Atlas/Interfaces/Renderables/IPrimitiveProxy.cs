@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Interfaces
+namespace Atlas.Interfaces.Renderables
 {
-    internal interface IRenderable
+    internal interface IPrimitiveProxy
     {
+        IRenderable Renderable { get; }
     }
 }
