@@ -16,7 +16,7 @@ namespace Atlas.Primitives
         public StyleProperties StyleProperties { get; set; }  = new StyleProperties();
 
         public RowSpacer() {
-            StyleProperties.Color = new ColorProperty(Color.DefaultForeground);
+            StyleProperties.Color = new StyleProperty<Types.Color>(Color.DefaultForeground);
         }
     }
 }

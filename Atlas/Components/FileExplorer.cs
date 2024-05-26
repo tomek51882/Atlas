@@ -5,7 +5,7 @@ using Atlas.Models.DTOs;
 using Atlas.Primitives;
 using Atlas.Services;
 using Atlas.Types;
-using System.Runtime.CompilerServices;
+using Microsoft.Build.Construction;
 
 namespace Atlas.Components
 {
@@ -17,6 +17,7 @@ namespace Atlas.Components
         private SelectContainer<SimpleFileInfo> FileList { get; set; } = new SelectContainer<SimpleFileInfo>();
 
         [Inject] private IWindowService? WindowService { get; init; }
+        [Inject] private IDialogService DialogService { get; init; }
 
         public override void OnInitialized()
         {
@@ -48,7 +49,8 @@ namespace Atlas.Components
                 HandleSelection(FileList.SelectedValue);
             }
         }
-        private void HandleSelection(SimpleFileInfo? data)
+
+        private async Task HandleSelection(SimpleFileInfo? data)
         {
             if (data is null)
             {
@@ -63,7 +65,7 @@ namespace Atlas.Components
 
             if (data.Name.EndsWith(".sln"))
             {
-                var test = Unsafe.As<WindowService>(WindowService);
+                
                 var solution = Microsoft.Build.Construction.SolutionFile.Parse(Path.Combine(currentDir, data.Name));
 
                 //if (solution.ProjectsInOrder.Count == 1)
@@ -75,7 +77,9 @@ namespace Atlas.Components
                     { x => x.Solution, solution }
                 };
 
-                test.OpenPopup<ProjectSelector>("Select Project", popupParams);
+                var test = await DialogService.ShowDialogAsync<ProjectSelector>("Select Project", popupParams);
+                var selectedProject = test.Data as ProjectInSolution;
+
             }
         }
 

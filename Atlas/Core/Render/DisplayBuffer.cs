@@ -8,6 +8,8 @@ namespace Atlas.Core.Render
     internal class DisplayBuffer
     {
         private CharInfo[,] displayBuffer;
+        private int[] zIndexMap;
+
         private int width;
         private int height;
         private int cursorX;
@@ -26,9 +28,10 @@ namespace Atlas.Core.Render
             cursorX = 0;
             cursorY = 0;
             displayBuffer = new CharInfo[width, height];
+            zIndexMap = new int[width * height];
             //buffer = new Memory<CharInfo>();
         }
-         
+
         internal void Flush()
         {
 
@@ -79,7 +82,6 @@ namespace Atlas.Core.Render
             lastFgColor = Color.DefaultForeground;
             lastBgColor = Color.DefaultBackground;
             Console.SetCursorPosition(0, 0);
-            //Console.
         }
 
         internal void SetCursor(int cursorX, int cursorY)
@@ -88,7 +90,7 @@ namespace Atlas.Core.Render
             this.cursorY = cursorY;
         }
 
-        internal void DrawBox(Rect rect)
+        internal void DrawBox(RenderContext context, Rect rect)
         {
             SetCursor(rect.x, rect.y);
             for (int y = 0; y < rect.height; y++)
@@ -96,45 +98,30 @@ namespace Atlas.Core.Render
                 for (int x = 0; x < rect.width; x++)
                 {
                     var temp = new Vector2Int(rect.x + x, rect.y + y);
-                    Write('╳');
+                    Write(context, '╳');
                 }
                 SetCursor(rect.x, rect.y + y + 1);
             }
         }
-        internal void Write(char input)
+        internal void Write(RenderContext context, char input)
         {
-            Write(input, Color.DefaultForeground, Color.DefaultBackground);
+            Write(context, input, Color.DefaultForeground, Color.DefaultBackground);
         }
-        internal void Write(char input, Color fgColor)
+        internal void Write(RenderContext context, char input, Color fgColor)
         {
-            Write(input, fgColor, Color.DefaultBackground);
+            Write(context, input, fgColor, Color.DefaultBackground);
         }
-        internal void Write(char input, Color fgColor, Color bgColor)
+        internal void Write(RenderContext context, char input, Color fgColor, Color bgColor)
         {
             if (cursorX >= width || cursorX < 0 || cursorY >= height || cursorY < 0)
             {
                 return;
             }
-            if (displayBuffer[cursorX, cursorY].Char == '\0')
+            if (displayBuffer[cursorX, cursorY].Char == '\0' || HasHigherZIndex(context))
             {
                 displayBuffer[cursorX, cursorY] = new CharInfo(input, fgColor, bgColor);
             }
             cursorX++;
-        }
-        internal void WriteText(string input)
-        {
-            for (int i = 0; i < input.Length; i++)
-            {
-                if (cursorX >= width)
-                {
-                    return;
-                }
-                if (displayBuffer[cursorX, cursorY].Char == '\0')
-                {
-                    displayBuffer[cursorX, cursorY] = new CharInfo(input[i], Color.DefaultForeground, Color.DefaultBackground);
-                }
-                cursorX++;
-            }
         }
 
         internal void WriteText(RenderContext context, Rect bounds, string input, Color fgColor, Color bgColor)
@@ -143,52 +130,59 @@ namespace Atlas.Core.Render
             {
                 return;
             }
-            bounds = bounds.RelativeToAbsolute(context.AbsoluteBounds);
-            
+            bounds = bounds.RelativeToAbsolute(context.ParentAbsoluteBounds);
+
             SetCursor(bounds.x, bounds.y);
             for (int i = 0; i < input.Length; i++)
             {
-                if (cursorX >= bounds.x + bounds.width || cursorX >= context.AbsoluteBounds.x + context.AbsoluteBounds.width)
+                if (cursorX >= bounds.x + bounds.width || cursorX >= context.ParentAbsoluteBounds.x + context.ParentAbsoluteBounds.width)
                 {
                     return;
                 }
-                if (displayBuffer[cursorX, cursorY].Char == '\0')
+
+                if (displayBuffer[cursorX, cursorY].Char == '\0' || HasHigherZIndex(context))
                 {
                     if (context.__ExperimentalInvertColors)
                     {
-                        displayBuffer[cursorX, cursorY] = new CharInfo(input[i], bgColor , fgColor);
+                        displayBuffer[cursorX, cursorY] = new CharInfo(input[i], bgColor, fgColor);
                     }
                     else
-                    { 
+                    {
                         displayBuffer[cursorX, cursorY] = new CharInfo(input[i], fgColor, bgColor);
                     }
                 }
                 cursorX++;
+
             }
         }
 
         internal void ForceWriteText(RenderContext context, Rect bounds, string input, Color fgColor, Color bgColor)
         {
             //int freeSpace = bounds.width = input.Length;
-            bounds = bounds.RelativeToAbsolute(context.AbsoluteBounds);
+            bounds = bounds.RelativeToAbsolute(context.ParentAbsoluteBounds);
             SetCursor(bounds.x, bounds.y);
             for (int i = 0; i < input.Length; i++)
             {
-                if (cursorX >= bounds.x+bounds.width || cursorX >= context.AbsoluteBounds.x + context.AbsoluteBounds.width)
+                if (cursorX >= bounds.x + bounds.width || cursorX >= context.ParentAbsoluteBounds.x + context.ParentAbsoluteBounds.width)
                 {
                     return;
                 }
+
+                //if (IsZIndexHigher(context) == false)
+                //{
+                //    return;
+                //}
                 displayBuffer[cursorX, cursorY] = new CharInfo(input[i], fgColor, bgColor);
                 cursorX++;
             }
         }
         internal void FillArea(RenderContext context, Rect bounds, Color fillColor)
         {
-            
+
         }
         internal void FillEmptyArea(RenderContext context, Rect bounds, Color fillColor)
         {
-            bounds = bounds.RelativeToAbsolute(context.AbsoluteBounds);
+            bounds = bounds.RelativeToAbsolute(context.ParentAbsoluteBounds);
             for (int y = bounds.y; y < bounds.y + bounds.height; y++)
             {
                 if (y < 0)
@@ -202,7 +196,7 @@ namespace Atlas.Core.Render
 
                 for (int x = bounds.x; x < bounds.x + bounds.width; x++)
                 {
-                    if (displayBuffer[x, y].Char == '\0')
+                    if (displayBuffer[x, y].Char == '\0' || HasHigherZIndex(context))
                     {
                         displayBuffer[x, y].Char = ' ';
                         if (context.__ExperimentalInvertColors)
@@ -212,7 +206,7 @@ namespace Atlas.Core.Render
                             displayBuffer[x, y].BgColor = Color.DefaultForeground;
                         }
                         else
-                        { 
+                        {
                             displayBuffer[x, y].FgColor = Color.DefaultForeground;
                             displayBuffer[x, y].BgColor = fillColor;
                         }
@@ -223,36 +217,56 @@ namespace Atlas.Core.Render
         internal void DrawWindow(RenderContext context, Rect bounds, Color borderColor, WindowFrame frameMap, string? windowTitle)
         {
             SetCursor(bounds.x, bounds.y);
-            Write(frameMap.fragmentMap[WindowFrameFragment.TopLeft], borderColor);
+            Write(context,frameMap.fragmentMap[WindowFrameFragment.TopLeft], borderColor);
 
             for (int i = 1; i < bounds.width - 1; i++)
             {
-                Write(frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
             }
-            Write(frameMap.fragmentMap[WindowFrameFragment.TopRight], borderColor);
+            Write(context, frameMap.fragmentMap[WindowFrameFragment.TopRight], borderColor);
 
             for (int j = 1; j < bounds.height - 1; j++)
             {
                 SetCursor(bounds.x, bounds.y + j);
-                Write(frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
                 SetCursor(bounds.x + bounds.width - 1, bounds.y + j);
-                Write(frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
             }
 
             SetCursor(bounds.x, bounds.y + bounds.height - 1);
-            Write(frameMap.fragmentMap[WindowFrameFragment.BottomLeft], borderColor);
+            Write(context, frameMap.fragmentMap[WindowFrameFragment.BottomLeft], borderColor);
             for (int i = 1; i < bounds.width - 1; i++)
             {
-                Write(frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
             }
 
-            Write(frameMap.fragmentMap[WindowFrameFragment.BottomRight], borderColor);
+            Write(context, frameMap.fragmentMap[WindowFrameFragment.BottomRight], borderColor);
 
             if (windowTitle is not null)
             {
-                Rect windowTitleArea = new Rect(bounds.x+2, bounds.y, bounds.width-3, 1);
+                Rect windowTitleArea = new Rect(bounds.x + 2, bounds.y, bounds.width - 3, 1);
                 ForceWriteText(context, windowTitleArea, windowTitle, borderColor, Color.DefaultBackground);
             }
+        }
+
+        private int Translate(int x, int y)
+        {
+            return y * width + x;
+        }
+        private (int x, int y) Translate(int idx)
+        {
+            return (idx % width, idx / width);
+        }
+
+        private bool HasHigherZIndex(RenderContext context)
+        {
+            int currentZIndex = context.CurrentStyleProperties?.ZIndex?.Value ?? 0;
+            int idx = Translate(cursorX, cursorY);
+            if (currentZIndex >= zIndexMap[idx])
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

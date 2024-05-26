@@ -34,11 +34,6 @@ namespace Atlas.Core
                 return;
             }
 
-            //if (renderable is IPrimitiveProxy<IRenderable> proxy)
-            //{
-            //    renderable = proxy.Value;
-            //}
-
             if (lookupNodes.TryGetValue(renderable, out RenderTreeNode? node))
             {
                 currentNode = node;

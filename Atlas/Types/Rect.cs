@@ -22,19 +22,6 @@ namespace Atlas.Types
             this.height = height;
         }
 
-        public override string ToString()
-        {
-            return $"X:{x} Y:{y} W:{width} H:{height}";
-        }
-
-        public bool Equals(Rect other)
-        {
-            return this.x == other.x
-                && this.y == other.y
-                && this.width == other.width
-                && this.height == other.height;
-        }
-
         public bool IsInside(Rect outerRect)
         {
             bool isInside =
@@ -45,6 +32,20 @@ namespace Atlas.Types
 
             return isInside;
         }
+
+        public override string ToString()
+        {
+            return $"X:{x} Y:{y} W:{width} H:{height}";
+        }
+        
+        public bool Equals(Rect other)
+        {
+            return this.x == other.x
+                && this.y == other.y
+                && this.width == other.width
+                && this.height == other.height;
+        }
+
         public static bool operator ==(Rect left, Rect right) => left.Equals(right);
 
         public static bool operator !=(Rect left, Rect right) => !(left == right);

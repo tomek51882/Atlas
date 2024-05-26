@@ -1,4 +1,6 @@
-﻿namespace Atlas.Types.Windows
+﻿using Atlas.Interfaces.Renderables;
+
+namespace Atlas.Types.Windows
 {
     internal ref struct WindowFrame
     {

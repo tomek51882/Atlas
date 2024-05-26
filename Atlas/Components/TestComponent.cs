@@ -13,7 +13,7 @@ namespace Atlas.Components
         {
             container = new Container();
             container.Rect = new Types.Rect(0, 0, 40,10);
-            container.StyleProperties.Padding = new Core.Styles.PaddingProperty(1);
+            container.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(1);
 
             for(int i =0; i<5 ; i++)
             {

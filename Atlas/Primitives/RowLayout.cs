@@ -77,6 +77,7 @@ namespace Atlas.Primitives
 
         public void Remove(IRenderable child)
         {
+
             throw new NotImplementedException();
         }
     }

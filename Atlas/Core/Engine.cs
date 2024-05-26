@@ -1,5 +1,6 @@
 ﻿
 using Atlas.Components;
+using Atlas.Extensions;
 using Atlas.Interfaces;
 using Atlas.Services;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +26,7 @@ namespace Atlas.Core
             Console.SetCursorPosition(0, 0);
             Console.InputEncoding = Encoding.UTF8;
             Console.OutputEncoding = Encoding.UTF8;
+            Console.TreatControlCAsInput = true;
 
             this._renderer = renderer;
             this._windowService = windowService;
@@ -40,8 +42,8 @@ namespace Atlas.Core
             WindowService ws = Unsafe.As<WindowService>(_windowService);
             //ws.CreateWindow<TestComponent>();
             ws.CreateWindow<TestListComponent>(new Types.Rect(0, 0, 40, 10), "List Test");
-            ws.CreateWindow<TestSelectComponent>(new Types.Rect(0, 10, 40, 14), "Select Test");
-            ws.CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), "🤔");
+            ws.CreateWindow<TestSelectComponent>(new Types.Rect(0, 10, 40, 14), "Select Test", new ConsoleKeyInfo().FromKey("C-a"));
+            ws.CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), "🤔", new ConsoleKeyInfo().FromKey("C-q"));
 
             try
             {
@@ -62,6 +64,7 @@ namespace Atlas.Core
                 Console.Write("\x1b[?1049l");
                 Console.Clear();
                 Console.Write($"A terrible exception has occurred:\n{ex.Message}");
+                
                 Debugger.Break();
                 Environment.Exit(1);
             }

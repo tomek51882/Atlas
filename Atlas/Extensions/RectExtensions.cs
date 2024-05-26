@@ -44,5 +44,6 @@ namespace Atlas.Extensions
 
             return rect;
         }
+    
     }
 }

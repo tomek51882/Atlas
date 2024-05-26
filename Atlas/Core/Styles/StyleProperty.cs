@@ -6,11 +6,10 @@ using System.Threading.Tasks;
 
 namespace Atlas.Core.Styles
 {
-    internal class PaddingProperty
+    internal class StyleProperty<T>
     {
-        internal int Value { get; set; }
-
-        internal PaddingProperty(int value)
+        public T Value { get; set; }
+        public StyleProperty(T value)
         {
             Value = value;
         }

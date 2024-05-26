@@ -30,6 +30,8 @@ namespace Atlas.Core.Render
         {
             if (node.Value is IPrimitive renderable)
             {
+                context.CurrentStyleProperties = renderable.StyleProperties;
+
                 if (renderable is IWindowable window)
                 {
                     RenderWindow(context, window);
@@ -57,7 +59,7 @@ namespace Atlas.Core.Render
 
                 foreach (RenderTreeNode child in node.Children)
                 {
-                    if (child.Value is IPrimitive childPrimitive && childPrimitive.Rect.IsInside(context.RelativeBounds) == false)
+                    if (child.Value is IPrimitive childPrimitive && childPrimitive.Rect.IsInside(context.ParentRelativeBounds) == false)
                     {
                         continue;
                     }
@@ -140,6 +142,10 @@ namespace Atlas.Core.Render
         public void MountRenderable(IRenderable renderable)
         {
             mountedRenderables.Add(renderable);
+        }
+        public void UnmountRenderable(IRenderable renderable)
+        {
+            mountedRenderables.Remove(renderable);
         }
 
         public void EnqueueComponentInitialization(IComponent component)

@@ -20,7 +20,9 @@ var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) => {
         services.AddSingleton<IRenderer, Renderer>();
         services.AddSingleton<IWindowService, WindowService>();
+        services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IInputSystem, InputSystem>();
+        services.AddSingleton<IComponentActivatorService, ComponentActivatorService>();
         services.AddHostedService<Engine>();
     });
 

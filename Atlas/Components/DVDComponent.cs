@@ -26,27 +26,32 @@ namespace Atlas.Components
             Timer.Enabled = true;
         }
 
+        //private void UpdateLogo(object? sender, ElapsedEventArgs e)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
         private void UpdateLogo(object? sender, ElapsedEventArgs e)
         {
             x += dx;
             y += dy;
 
-            if (x <= 1 || x >= 70)
+            if (x <= 1 || x >= 74)
             {
                 Random random = new Random();
                 double randomValue = random.NextDouble();
                 (byte r, byte g, byte b) = HSL2RGB(randomValue, 1, 0.5);
                 var test = new Types.Color(r, g, b);
-                Logo.StyleProperties.Color = new Core.Styles.ColorProperty(test);
+                Logo.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(test);
                 dx = -dx;
             }
-            if (y <= 1 || y >= 19)
+            if (y <= 1 || y >= 22)
             {
                 Random random = new Random();
                 double randomValue = random.NextDouble();
                 (byte r, byte g, byte b) = HSL2RGB(randomValue, 1, 0.5);
                 var test = new Types.Color(r, g, b);
-                Logo.StyleProperties.Color = new Core.Styles.ColorProperty(test);
+                Logo.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(test);
                 dy = -dy;
             }
 
