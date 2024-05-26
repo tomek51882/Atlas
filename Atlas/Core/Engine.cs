@@ -42,8 +42,8 @@ namespace Atlas.Core
             WindowService ws = Unsafe.As<WindowService>(_windowService);
             //ws.CreateWindow<TestComponent>();
             ws.CreateWindow<TestListComponent>(new Types.Rect(0, 0, 40, 10), "List Test");
-            ws.CreateWindow<TestSelectComponent>(new Types.Rect(0, 10, 40, 14), "Select Test", new ConsoleKeyInfo().FromKey("C-a"));
-            ws.CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), "🤔", new ConsoleKeyInfo().FromKey("C-q"));
+            ws.CreateWindow<TestSelectComponent>(new Types.Rect(0, 10, 40, 14), "Select Test", new Types.Windows.WindowOptions { WindowShortcut = new ConsoleKeyInfo().FromKey("C-a") });
+            ws.CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), "🤔", new Types.Windows.WindowOptions { WindowShortcut = new ConsoleKeyInfo().FromKey("C-q") });
 
             try
             {

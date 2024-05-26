@@ -34,7 +34,10 @@ namespace Atlas.Core.Render
 
                 if (renderable is IWindowable window)
                 {
-                    RenderWindow(context, window);
+                    if (!(window.Options.Frameless == true))
+                    {
+                        RenderWindow(context, window);
+                    }
                 }
                 if (renderable is IPrimitiveText text)
                 {
@@ -81,7 +84,8 @@ namespace Atlas.Core.Render
         private void RenderWindow(RenderContext context, IWindowable window)
         {
             var frameMap = window.IsFocused ? WindowFrame.WindowFocused : WindowFrame.Window;
-            displayBuffer.DrawWindow(context, window.Rect, new Color(0xee7f00), frameMap, $" {window.Title} ");
+            var borderColor = window.StyleProperties.Color?.Value ?? new Color(0xee7f00);
+            displayBuffer.DrawWindow(context, window.Rect, borderColor, frameMap, $" {window.Title} ");
         }
 
         public void Update()

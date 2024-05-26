@@ -14,17 +14,18 @@ namespace Atlas.Primitives
         public string? Title {
             get 
             {
-                if (WindowShortcut.Key == ConsoleKey.None)
-                {
-                    return _title;
-                }
-                else
+                if (Options.WindowShortcut.Key != ConsoleKey.None)
                 {
                     // [L]
                     // [C-R]
-                    char keyChar = (WindowShortcut.Modifiers & ConsoleModifiers.Shift) != 0 ? char.ToUpper(WindowShortcut.KeyChar) : char.ToLower(WindowShortcut.KeyChar);
-                    string prefix = (WindowShortcut.Modifiers & ConsoleModifiers.Control) != 0 ? "C-" : "";
+                    var shortcutKey = Options.WindowShortcut;
+                    char keyChar = (shortcutKey.Modifiers & ConsoleModifiers.Shift) != 0 ? char.ToUpper(shortcutKey.KeyChar) : char.ToLower(shortcutKey.KeyChar);
+                    string prefix = (shortcutKey.Modifiers & ConsoleModifiers.Control) != 0 ? "C-" : "";
                     return $"[{prefix}{keyChar}] {_title}";
+                }
+                else
+                {
+                    return _title;
                 }
             }
             set 
@@ -36,15 +37,20 @@ namespace Atlas.Primitives
         public StyleProperties StyleProperties { get; set; } = new StyleProperties();
         public IComponent? Component { get; set; }
         public string WindowId { get; }
-        //public WindowShortcut WindowShortcut { get; init; }
-        public ConsoleKeyInfo WindowShortcut { get; init; }
+        public WindowOptions Options { get; set; }
 
-        public Window(Rect rect, IComponent component, string windowId, ConsoleKeyInfo shortcut)
+        public Window(Rect rect, IComponent component, string windowId)
         {
             Rect = rect;
             AddElement(component);
             WindowId = windowId;
-            WindowShortcut = shortcut;
+        }
+        public Window(Rect rect, IComponent component, string windowId, WindowOptions options)
+        {
+            Rect = rect;
+            AddElement(component);
+            WindowId = windowId;
+            Options = options;
         }
 
         public void AddElement(IComponent child)

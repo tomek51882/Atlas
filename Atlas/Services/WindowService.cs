@@ -31,14 +31,14 @@ namespace Atlas.Services
             this.componentActivatorService = componentActivatorService;
 
             this.inputSystem.OnKeyPress += HandleKeyPress;
-            (_, inputSystemDebugLine) = CreateWindow<InputSystemDebugLine>(new Types.Rect(0, 24, 126, 3), "Input Debug");
+            (_, inputSystemDebugLine) = CreateWindow<InputSystemDebugLine>(new Types.Rect(0, 24, 126, 3), "Input Debug", new WindowOptions { Frameless = true });
         }
 
         public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle) where T : IComponent, new()
         {
-            return CreateWindow<T>(windowRect, windowTitle, new ConsoleKeyInfo('\0', ConsoleKey.None, false, false, false));
+            return CreateWindow<T>(windowRect, windowTitle, null);
         }
-        public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle, ConsoleKeyInfo shortcut) where T : IComponent, new()
+        public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle, WindowOptions? options) where T : IComponent, new()
         {
             if (FocusedWindow is not null)
             {
@@ -48,15 +48,26 @@ namespace Atlas.Services
             var component = new T();
             componentActivatorService.ResolveDependencies(component);
 
-            FocusedWindow = new Window(windowRect, component, ShortIdGenerator.Generate(), shortcut);
+            if (options.HasValue == false)
+            {
+                options = WindowOptions.Default;
+            }
+
+            FocusedWindow = new Window(windowRect, component, ShortIdGenerator.Generate(), options.Value);
             FocusedWindow.IsFocused = true;
             FocusedWindow.Title = windowTitle;
-            FocusedWindow.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(1);
             OpenedWindows.Add(FocusedWindow.WindowId, FocusedWindow);
 
-            if (shortcut.Key != ConsoleKey.None)
+            if (options.HasValue)
             {
-                WindowsShortcuts.Add(new KeyShortcut(shortcut), FocusedWindow);
+                if (options.Value.WindowShortcut.Key != ConsoleKey.None)
+                {
+                    WindowsShortcuts.Add(new KeyShortcut(options.Value.WindowShortcut), FocusedWindow);
+                }
+                if (options.Value.Frameless == false)
+                {
+                    FocusedWindow.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(1);
+                }
             }
 
             Unsafe.As<Renderer>(renderer).MountRenderable(FocusedWindow);
@@ -104,7 +115,7 @@ namespace Atlas.Services
                 CloseFocusedWindow();
                 return;
             }
-            if(WindowsShortcuts.TryGetValue(key, out var window)) 
+            if (WindowsShortcuts.TryGetValue(key, out var window))
             {
                 if (FocusedWindow is not null)
                 {

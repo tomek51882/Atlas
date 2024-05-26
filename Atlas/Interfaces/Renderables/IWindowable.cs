@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Atlas.Types.Windows;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,5 +17,6 @@ namespace Atlas.Interfaces.Renderables
         IComponent? Component { get; }
         bool IsFocused { get; }
         string? Title { get; }
+        WindowOptions Options { get; }
     }
 }
