@@ -19,6 +19,10 @@ namespace Atlas.Extensions
                 modifiers |= ConsoleModifiers.Control;
                 combination = combination[2..];
             }
+            else if (combination.Length == 1 && char.IsUpper(combination[0]))
+            {
+                modifiers |= ConsoleModifiers.Shift;
+            }
 
             if (combination.Length == 1)
             {
@@ -42,7 +46,7 @@ namespace Atlas.Extensions
                 throw new ArgumentException("Invalid key combination format");
             }
 
-            return new ConsoleKeyInfo(character, key, false, false, (modifiers & ConsoleModifiers.Control) != 0);
+            return new ConsoleKeyInfo(character, key, (modifiers & ConsoleModifiers.Shift) != 0, false, (modifiers & ConsoleModifiers.Control) != 0);
         }
     }
 }

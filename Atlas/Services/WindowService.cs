@@ -15,10 +15,12 @@ namespace Atlas.Services
     {
         private readonly IRenderer renderer;
         private readonly IInputSystem inputSystem;
-        private readonly InputSystemDebugLine inputSystemDebugLine;
         private readonly IServiceProvider serviceProvider;
         private readonly IComponentActivatorService componentActivatorService;
 
+
+        private readonly InputSystemDebugLine inputSystemDebugLine;
+        private readonly StatusBar statusBar;
         private Window? FocusedWindow;
         private Dictionary<string, Window> OpenedWindows { get; set; } = new Dictionary<string, Window>();
         private Dictionary<KeyShortcut, Window> WindowsShortcuts = new Dictionary<KeyShortcut, Window>();
@@ -31,7 +33,8 @@ namespace Atlas.Services
             this.componentActivatorService = componentActivatorService;
 
             this.inputSystem.OnKeyPress += HandleKeyPress;
-            (_, inputSystemDebugLine) = CreateWindow<InputSystemDebugLine>(new Types.Rect(0, 24, 126, 3), "Input Debug", new WindowOptions { Frameless = true });
+            (_, inputSystemDebugLine) = CreateWindow<InputSystemDebugLine>(new Types.Rect(0, 25, 126, 1), "Input Debug", new WindowOptions { Frameless = true });
+            (_, statusBar) = CreateWindow<StatusBar>(new Types.Rect(0, 26, 126, 1), "", new WindowOptions { Frameless = true });
         }
 
         public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle) where T : IComponent, new()
@@ -58,8 +61,9 @@ namespace Atlas.Services
             FocusedWindow.Title = windowTitle;
             OpenedWindows.Add(FocusedWindow.WindowId, FocusedWindow);
 
-            if (options.HasValue)
+            if (options.HasValue) //kinda pointless
             {
+                var windowBorderColor = new Color(0xFF00FF);
                 if (options.Value.WindowShortcut.Key != ConsoleKey.None)
                 {
                     WindowsShortcuts.Add(new KeyShortcut(options.Value.WindowShortcut), FocusedWindow);
@@ -68,6 +72,11 @@ namespace Atlas.Services
                 {
                     FocusedWindow.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(1);
                 }
+                if (options.Value.BorderColor.validColor)
+                {
+                    windowBorderColor = options.Value.BorderColor;
+                }
+                FocusedWindow.StyleProperties.Color = new Core.Styles.StyleProperty<Color>(windowBorderColor);
             }
 
             Unsafe.As<Renderer>(renderer).MountRenderable(FocusedWindow);

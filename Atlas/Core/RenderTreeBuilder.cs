@@ -2,6 +2,7 @@
 using Atlas.Core.Styles;
 using Atlas.Interfaces.Renderables;
 using Atlas.Types;
+using System.Runtime.CompilerServices;
 
 namespace Atlas.Core
 {
@@ -14,14 +15,12 @@ namespace Atlas.Core
         private long treeGeneration = 0;
 
         internal RenderTreeNode RenderTree { get; private set; }
-        internal IPrimitive RenderTreeRoot { get; private set; }
+        internal IPrimitive Root => Unsafe.As<IPrimitive>(RenderTree.Value);
 
         public RenderTreeBuilder(Renderer renderer)
         {
             Renderer = renderer;
-            var root = new VirtualRoot();
-            RenderTreeRoot = root;
-            RenderTree = new RenderTreeNode(RenderTreeRoot);
+            RenderTree = new RenderTreeNode(new VirtualRoot());
             RenderTree.IsInitialized = true;
 
             parentNode = RenderTree;

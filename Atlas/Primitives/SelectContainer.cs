@@ -11,9 +11,25 @@ namespace Atlas.Primitives
     {
         private Action<T, SelectItem<T>> _rowTemplate = (item, row) => row.Children.Add(new Text(item?.ToString()));
         private Dictionary<T, SelectItem<T>> itemsLookup = new Dictionary<T, SelectItem<T>>();
+        private Rect _rect = new Rect();
+
         public T? SelectedValue { get; set; }
         public IPrimitive? SelectedItem { get; set; }
-        public Rect Rect { get; set; }
+        public Rect Rect
+        {
+            get
+            {
+                return _rect;
+            }
+            set
+            {
+                _rect = value;
+                if (Children.Count > 0)
+                {
+                    UpdateChildrenSize();
+                }
+            }
+        }
         public List<IRenderable> Children { get; set; } = new List<IRenderable>();
         public StyleProperties StyleProperties { get; set; } = new StyleProperties();
         public Vector2Int ScrollOffset { get; set; }
@@ -42,7 +58,7 @@ namespace Atlas.Primitives
             {
                 for (int i = 0; i < this.Rect.height && i < this.Children.Count; i++)
                 {
-                    
+
                 }
                 return Children;
             }
@@ -103,7 +119,7 @@ namespace Atlas.Primitives
             SelectedValue = newSelectedItem.Value;
             SelectedItem = newSelectedItem;
 
-            if (SelectedItem.Rect.y - ScrollOffset.y >=  this.Rect.height)
+            if (SelectedItem.Rect.y - ScrollOffset.y >= this.Rect.height)
             {
                 ScrollDown();
             }
@@ -151,6 +167,14 @@ namespace Atlas.Primitives
                 item.ScrollOffset = this.ScrollOffset;
             }
         }
+        private void UpdateChildrenSize()
+        {
+            for (int i = 0; i < Children.Count; i++)
+            {
+                var childPrimitive = (IPrimitive)Children[i];
+                childPrimitive.Rect = new Rect(0, i, Rect.width, 1);
+            }
+        }
     }
 
     class SelectItem<T> : RowLayout, ISelectableItem
@@ -166,6 +190,7 @@ namespace Atlas.Primitives
             set
             {
                 base.Rect = value;
+                RecalculateLayout();
             }
         }
 

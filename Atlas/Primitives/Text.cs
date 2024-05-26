@@ -24,7 +24,11 @@ namespace Atlas.Primitives
             Value = value;
             Rect = new Rect(0,0, Value?.Length ?? 0, 1);
         }
-
+        public Text CopyStyle(Text text)
+        {
+            this.StyleProperties = text.StyleProperties;
+            return this;
+        }
         //public void UpdateText(string? value)
         //{
         //    Value = value;

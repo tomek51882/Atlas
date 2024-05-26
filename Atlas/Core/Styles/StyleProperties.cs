@@ -10,6 +10,7 @@ namespace Atlas.Core.Styles
         internal StyleProperty<Color>? Color { get; set; }
         internal StyleProperty<Color>? BackgroundColor { get; set; }
         internal StyleProperty<int>? ZIndex { get; set; }
-        internal StyleProperty<int>? Width { get; set; }
+        internal StyleProperty<UnitValue<int>>? Width { get; set; }
+        internal StyleProperty<UnitValue<int>>? Height { get; set; }
     }
 }
