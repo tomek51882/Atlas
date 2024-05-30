@@ -4,6 +4,7 @@ using Atlas.Core.Styles;
 using Atlas.Core;
 using Atlas.Primitives;
 using Atlas.Types;
+using Atlas.Utils;
 
 namespace Atlas.Components
 {
@@ -26,6 +27,7 @@ namespace Atlas.Components
             layout.Add(new Text(" [Q] Add Apps").CopyStyle(text));
             layout.Add(spacer);
             layout.Add(new Text("[D] Diagnostics").CopyStyle(text));
+            layout.Add(new Text($" | {VersionInfo.GetCommitHash()}").CopyStyle(text));
 
             layout.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
             layout.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(1, UnitValue<int>.Unit.Char));

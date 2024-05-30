@@ -5,7 +5,9 @@ namespace Atlas.Database
 {
     internal class DatabaseContext : DbContext
     {
+
         public DbSet<SavedAppsDb> Apps { get; set; }
+        public DbSet<SettingsDb> Settings { get; set; }
 
         public string DbPath { get; }
         public DatabaseContext() 
