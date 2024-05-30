@@ -44,6 +44,15 @@ namespace Atlas.Core
                 currentNode.IsNew = true;
                 currentNode.Parent = parentNode;
                 parentNode.Children.Add(currentNode);
+
+                //NOTE: May seriously hit performance
+                //TODO: Enqueue task in renderer to execute in free time
+                var parent = currentNode.Parent;
+                while (parent is not null)
+                {
+                    parent.NeedsRectRecalculation = true;
+                    parent = parent.Parent;
+                }
                 
                 lookupNodes.Add(renderable, currentNode);
             }
@@ -82,7 +91,7 @@ namespace Atlas.Core
         internal void UpdateTree(List<IRenderable> children)
         {
             //Update only if something changed
-            //if (!RenderTree.IsDirty)
+            //if (RenderTree.IsDirty == false)
             //{
             //    return;
             //}
@@ -102,9 +111,9 @@ namespace Atlas.Core
                 //Debugger.Break();
                 var unmountNode = lookupNodes[key];
                 unmountNode?.Parent?.Children.Remove(unmountNode);
-                if (unmountNode?.Value is IComponent component)
+                if (unmountNode?.Value is not null)
                 {
-                    Renderer.EnqueueComponentDisposal(component);
+                    Renderer.EnqueueDisposal(unmountNode.Value);
                 }
                 lookupNodes.Remove(key);
             }

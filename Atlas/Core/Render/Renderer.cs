@@ -1,5 +1,7 @@
-﻿using Atlas.Interfaces;
+﻿using Atlas.Components;
+using Atlas.Interfaces;
 using Atlas.Interfaces.Renderables;
+using Atlas.Primitives;
 using Atlas.Types;
 using Atlas.Types.Windows;
 using Atlas.Utils;
@@ -11,12 +13,12 @@ namespace Atlas.Core.Render
     internal class Renderer : IRenderer
     {
         private RenderTreeBuilder treeBuilder;
-        private List<IRenderable> mountedRenderables = new List<IRenderable>();
-        private ConcurrentQueue<IComponent> initializationQueue = new ConcurrentQueue<IComponent>();
-        private ConcurrentQueue<IComponent> disposeQueue = new ConcurrentQueue<IComponent>();
-        private List<Task> pendingTasks = new List<Task>();
         private DisplayBuffer displayBuffer;
-        private List<string> stuff = new List<string>();
+        private List<IRenderable> mountedRenderables = new List<IRenderable>();
+
+        private List<Task> pendingTasks = new List<Task>();
+        private ConcurrentQueue<IComponent> initializationQueue = new ConcurrentQueue<IComponent>();
+        private ConcurrentQueue<IRenderable> disposeQueue = new ConcurrentQueue<IRenderable>();
 
         public Renderer()
         {
@@ -146,7 +148,7 @@ namespace Atlas.Core.Render
 
                 if (renderable is IWindowable window)
                 {
-                    if (!(window.Options.Frameless == true))
+                    if (window.Options.Frameless != true)
                     {
                         RenderWindow(context, window);
                     }
@@ -211,8 +213,6 @@ namespace Atlas.Core.Render
             displayBuffer.DrawWindow(context, window.Rect, borderColor, frameMap, $" {window.Title} ");
         }
 
-
-
         public void MountRenderable(IRenderable renderable)
         {
             mountedRenderables.Add(renderable);
@@ -226,13 +226,13 @@ namespace Atlas.Core.Render
             component.OnInitialized();
             initializationQueue.Enqueue(component);
         }
-        public void EnqueueComponentDisposal(IComponent component)
+        public void EnqueueDisposal(IRenderable renderable)
         {
-            if (component is IDisposable disposable)
+            if (renderable is IDisposable disposable)
             {
                 disposable.Dispose();
             }
-            disposeQueue.Enqueue(component);
+            disposeQueue.Enqueue(renderable);
         }
         private void __Debug__RenderRenderableStructure(RenderTreeNode node, int depth)
         {

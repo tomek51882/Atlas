@@ -21,7 +21,7 @@ namespace Atlas.Primitives
                     //Should be fine since all items of list should be of type ListItem
                     var listItem = Unsafe.As<ListItem<T>>(x);
                     var value = listItem.Value;
-                    listItem.Children.Clear();
+                    listItem.ClearContent();
                     RowTemplate(value, listItem);
                     listItem.RecalculateLayout();
                 });

@@ -38,6 +38,7 @@ namespace Atlas.Primitives
         public IComponent? Component { get; set; }
         public string WindowId { get; }
         public WindowOptions Options { get; set; }
+        public WindowHints WindowHints { get; set; } // Shortcuts for statusbar
 
         public Window(Rect rect, IComponent component, string windowId)
         {

@@ -48,7 +48,7 @@ namespace Atlas.Types
 
         public static bool operator ==(Rect left, Rect right) => left.Equals(right);
 
-        public static bool operator !=(Rect left, Rect right) => !(left == right);
+        public static bool operator !=(Rect left, Rect right) => !left.Equals(right);
 
         public static Rect Zero => new Rect(0,0,0,0);
     }

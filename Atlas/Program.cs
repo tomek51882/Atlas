@@ -23,6 +23,7 @@ var builder = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IDialogService, DialogService>();
         services.AddSingleton<IInputSystem, InputSystem>();
         services.AddSingleton<IComponentActivatorService, ComponentActivatorService>();
+        services.AddSingleton<IAppsService, AppsService>();
         services.AddHostedService<Engine>();
     });
 

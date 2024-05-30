@@ -23,6 +23,7 @@ namespace Atlas.Components
             spacer.StyleProperties.BackgroundColor = new StyleProperty<Color>(new Color(0x232428));
 
             layout.Add(text);
+            layout.Add(new Text(" [Q] Add Apps").CopyStyle(text));
             layout.Add(spacer);
             layout.Add(new Text("[D] Diagnostics").CopyStyle(text));
 

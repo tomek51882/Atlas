@@ -1,28 +1,30 @@
 ﻿using Atlas.Attributes;
 using Atlas.Core;
 using Atlas.Interfaces;
+using Atlas.Interfaces.Apps;
 using Atlas.Models.DTOs;
 using Atlas.Primitives;
 using Atlas.Services;
 using Atlas.Types;
 using Microsoft.Build.Construction;
+using System.Runtime.CompilerServices;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Atlas.Components
 {
     internal class FileExplorer : ComponentBase
     {
-        private Rect TempSolutionForUnknmownParentSize = new Rect(0, 0, 80, 19);
         private string currentDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..");
 
         private SelectContainer<SimpleFileInfo> FileList { get; set; } = new SelectContainer<SimpleFileInfo>();
 
-        [Inject] private IWindowService? WindowService { get; init; }
         [Inject] private IDialogService DialogService { get; init; }
+        [Inject] private IAppsService AppService { get; init; }
 
         public override void OnInitialized()
         {
-            //FileList.Rect = TempSolutionForUnknmownParentSize;
-            FileList.RowTemplate = (item, row) => {
+            FileList.RowTemplate = (item, row) =>
+            {
                 row.Add(new Text(item.Name));
                 row.Add(new RowSpacer());
             };
@@ -36,7 +38,7 @@ namespace Atlas.Components
             builder.AddContent(FileList);
         }
 
-        public override void OnKeyPressed(ConsoleKeyInfo keyInfo)
+        public override async void OnKeyPressed(ConsoleKeyInfo keyInfo)
         {
             if (keyInfo.Key == ConsoleKey.DownArrow)
             {
@@ -48,7 +50,7 @@ namespace Atlas.Components
             }
             else if (keyInfo.Key == ConsoleKey.Enter)
             {
-                HandleSelection(FileList.SelectedValue);
+                await HandleSelection(FileList.SelectedValue);
             }
         }
 
@@ -67,22 +69,33 @@ namespace Atlas.Components
 
             if (data.Name.EndsWith(".sln"))
             {
-                
-                var solution = Microsoft.Build.Construction.SolutionFile.Parse(Path.Combine(currentDir, data.Name));
-
-                //if (solution.ProjectsInOrder.Count == 1)
-                //{ 
-                //}
-
-                var popupParams = new PopupParameters<ProjectSelector>
-                {
-                    { x => x.Solution, solution }
-                };
-
-                var test = await DialogService.ShowDialogAsync<ProjectSelector>("Select Project", popupParams);
-                var selectedProject = test.Data as ProjectInSolution;
-
+                await HandleSolutionFile(data);
             }
+        }
+
+        private async Task HandleSolutionFile(SimpleFileInfo data)
+        {
+            var solution = Microsoft.Build.Construction.SolutionFile.Parse(Path.Combine(currentDir, data.Name));
+            var appSrv = Unsafe.As<AppsService>(AppService);
+
+            if (solution.ProjectsInOrder.Count == 1)
+            {
+                appSrv.AddApp(new MSBuildApp(solution.ProjectsInOrder.First()));
+                return;
+            }
+
+            var popupParams = new PopupParameters<ProjectSelector>
+            {
+                { x => x.Solution, solution }
+            };
+
+            var dialogResult = await DialogService.ShowDialogAsync<ProjectSelector>("Select Project", popupParams);
+            var selectedProject = dialogResult.Data as ProjectInSolution;
+            if (selectedProject is null)
+            {
+                return;
+            }
+            appSrv.AddApp(new MSBuildApp(selectedProject));
         }
 
         private void LoadFiles()
@@ -101,9 +114,9 @@ namespace Atlas.Components
 
             foreach (var fileInfo in files)
             {
-                FileList.AddOption(new SimpleFileInfo { Name = fileInfo.Name, IsDirectory = false, Size = fileInfo.Length });
+                FileList.AddOption(new SimpleFileInfo { Name = fileInfo.Name, IsDirectory = false, Size = fileInfo.Length, FullPath = fileInfo.FullName });
             }
-            
+
         }
     }
 }

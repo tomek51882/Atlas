@@ -33,25 +33,27 @@ namespace Atlas.Primitives
         public List<IRenderable> Children { get; set; } = new List<IRenderable>();
         public StyleProperties StyleProperties { get; set; } = new StyleProperties();
         public Vector2Int ScrollOffset { get; set; }
-
         public Action<T, SelectItem<T>> RowTemplate
         {
             get => _rowTemplate;
             set
             {
                 _rowTemplate = value;
-                Children.ForEach(x =>
-                {
-                    //Should be fine since all items of list should be of type SelectItem
-                    var listItem = Unsafe.As<SelectItem<T>>(x);
-                    var value = listItem.Value;
-                    listItem.Children.Clear();
-                    RowTemplate(value, listItem);
-                    listItem.RecalculateLayout();
-                });
+                RefreshOptions();
             }
         }
-
+        public void RefreshOptions()
+        {
+            Children.ForEach(x =>
+            {
+                //Should be fine since all items of list should be of type SelectItem
+                var listItem = Unsafe.As<SelectItem<T>>(x);
+                var value = listItem.Value;
+                listItem.ClearContent();
+                RowTemplate(value, listItem);
+                listItem.RecalculateLayout();
+            });
+        }
         public List<IRenderable> ChildrenInRect
         {
             get
@@ -63,7 +65,6 @@ namespace Atlas.Primitives
                 return Children;
             }
         }
-
         public void ClearList()
         {
             SelectedValue = default;
@@ -72,7 +73,6 @@ namespace Atlas.Primitives
             itemsLookup.Clear();
             Children.Clear();
         }
-
         public void AddOption(T child)
         {
             if (child is null)
@@ -93,7 +93,6 @@ namespace Atlas.Primitives
             itemsLookup.Add(child, item);
             Children.Add(item);
         }
-
         public void RemoveElement(T child)
         {
             if (itemsLookup.TryGetValue(child, out var listItem))
@@ -102,7 +101,6 @@ namespace Atlas.Primitives
                 Children.Remove(listItem);
             }
         }
-
         public void SelectNext()
         {
             if (SelectedItem is null || Children.Count == 0)
@@ -145,19 +143,16 @@ namespace Atlas.Primitives
                 ScrollUp();
             }
         }
-
         public void ScrollUp()
         {
             this.ScrollOffset = this.ScrollOffset += new Vector2Int(0, 1);
             ApplyScroll();
         }
-
         public void ScrollDown()
         {
             this.ScrollOffset = this.ScrollOffset += new Vector2Int(0, -1);
             ApplyScroll();
         }
-
         private void ApplyScroll()
         {
             SelectItem<T> item;
@@ -193,7 +188,6 @@ namespace Atlas.Primitives
                 RecalculateLayout();
             }
         }
-
         public SelectItem(T value)
         {
             Value = value;

@@ -32,6 +32,12 @@ namespace Atlas.Primitives
         public List<IRenderable> Children { get; set; } = new List<IRenderable> ();
         public StyleProperties StyleProperties { get; set; } = new StyleProperties ();
 
+        public void ClearContent()
+        {
+            contentLength = 0;
+            Children.Clear();
+            spacers.Clear();
+        }
         public void Add(IPrimitive child)
         {
             Children.Add(child);

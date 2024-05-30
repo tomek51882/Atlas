@@ -128,7 +128,7 @@ namespace Atlas.Services
 
         internal void Add<TParam>(Expression<Func<T, TParam>> propertyExpression, TParam value)
         {
-            if (!(propertyExpression.Body is MemberExpression memberExpression))
+            if (propertyExpression.Body is not MemberExpression memberExpression)
             {
                 throw new Exception("Lul, only member access is allowed");
             }
