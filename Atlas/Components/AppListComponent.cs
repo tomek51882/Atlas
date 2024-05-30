@@ -1,11 +1,13 @@
 ﻿
 using Atlas.Attributes;
 using Atlas.Core;
+using Atlas.Database;
 using Atlas.Interfaces;
 using Atlas.Interfaces.Apps;
 using Atlas.Models.DTOs;
 using Atlas.Primitives;
 using Atlas.Services;
+using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 
 namespace Atlas.Components
@@ -25,8 +27,6 @@ namespace Atlas.Components
 
         public override void OnInitialized()
         {
-            //mySelect.Rect = new Types.Rect(0, 0, 38, 8);
-
             mySelect.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
             mySelect.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
 
@@ -90,7 +90,12 @@ namespace Atlas.Components
             var apps = Unsafe.As<AppsService>(AppService);
 
             var ah = apps.ExecuteApp(app.App);
-            app.Runner = ah.AppRunner;
+            if (ah.HasValue == false)
+            {
+                return;
+            }
+
+            app.Runner = ah.Value.AppRunner;
             app.Runner.OnRunnerStatusChange += (status) => 
             {
 
@@ -104,6 +109,12 @@ namespace Atlas.Components
                     app.Text.Value = "Failed";
                     app.Text.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(new Types.Color(0xff0000));
                 }
+
+                else if (status == Core.Apps.RunnerStatus.RanToCompletion)
+                {
+                    app.Text.Value = "Stopped";
+                    app.Text.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(Types.Color.DefaultForeground);
+                }
                 else
                 {
                     app.Text.Value = status.ToString();
@@ -111,11 +122,6 @@ namespace Atlas.Components
                 }
                 mySelect.RefreshOptions();
             };
-        }
-
-        private void Runner_OnRunnerStatusChange(Core.Apps.RunnerStatus obj)
-        {
-            mySelect.RefreshOptions();
         }
     }
 }

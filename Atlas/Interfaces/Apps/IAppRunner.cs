@@ -9,8 +9,12 @@ namespace Atlas.Interfaces.Apps
 {
     internal interface IAppRunner
     {
+        bool IsRunning { get; }
         RunnerStatus RunnerStatus { get; }
-        event Action<AppRunner> OnRunnerStopped;
+
+        event Action OnRunnerStopped;
         event Action<RunnerStatus> OnRunnerStatusChange;
+
+        Task Run();
     }
 }

@@ -5,38 +5,43 @@ using Atlas.Models.DTOs;
 
 namespace Atlas.Services
 {
-    internal class AppsService: IAppsService
+    internal class AppsService : IAppsService
     {
         public List<IAppExecutable> Apps { get; private set; } = new List<IAppExecutable>();
-        public List<IAppRunner> Runners { get; private set; } = new List<IAppRunner>();
+        public Dictionary<IAppExecutable, IAppRunner> Runners { get; private set; } = new Dictionary<IAppExecutable, IAppRunner> { };
 
         public event Action OnAppListChange = delegate { };
-        public event Action<IAppRunner, IAppExecutable> OnRunnerStarted = delegate { };
-        
-        public AppsService() 
-        {
-            
-        }
 
         public void AddApp(IAppExecutable app)
         {
-            //TODO: Check for duplicates
+            if (Apps.Any(x => x.Name == app.Name))
+            {
+                return;
+            }
+
             Apps.Add(app);
             OnAppListChange.Invoke();
         }
 
-        public AppRunnerHandler ExecuteApp(IAppExecutable app)
+        public AppRunnerHandler? ExecuteApp(IAppExecutable app)
         {
-            var runner = new AppRunner(app, HandleAppRunnerStop);
-            Runners.Add(runner);
-            _ = runner.Run();
+            if (Runners.TryGetValue(app, out var appRunner))
+            {
+                if (appRunner is not null && appRunner.IsRunning)
+                {
+                    return null;
+                }
+                appRunner = new AppRunner(app);
+            }
+            else
+            {
+                appRunner = new AppRunner(app);
+                Runners.Add(app, appRunner);
+            }
 
-            return new AppRunnerHandler(runner);
-        }
+            _ = appRunner.Run();
 
-        private void HandleAppRunnerStop(AppRunner runner)
-        {
-            Runners.Remove(runner);
+            return new AppRunnerHandler(app, appRunner);
         }
     }
 }

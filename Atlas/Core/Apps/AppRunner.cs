@@ -9,6 +9,8 @@ namespace Atlas.Core.Apps
         private RunnerStatus _runnerStatus = RunnerStatus.Created;
         private readonly List<string> logs = new List<string>();
         private Process? RunnerProcess;
+
+        public bool IsRunning { get; private set; }
         public Exception? Exception { get; private set; }
         public IAppExecutable App { get; init; }
         public RunnerStatus RunnerStatus
@@ -24,19 +26,19 @@ namespace Atlas.Core.Apps
             }
         }
 
-        public event Action<AppRunner> OnRunnerStopped = delegate { };
+        public event Action OnRunnerStopped = delegate { };
         public event Action<RunnerStatus> OnRunnerStatusChange = delegate { };
 
-        internal AppRunner(IAppExecutable app, Action<AppRunner> OnRunnerStopped)
+        internal AppRunner(IAppExecutable app)
         {
             App = app;
             logs.Add($"Runner for {app.Name} is created");
             RunnerStatus = RunnerStatus.WaitingToRun;
-            this.OnRunnerStopped = OnRunnerStopped;
         }
 
-        internal async Task Run()
+        public async Task Run()
         {
+            IsRunning = true;
             await Task.Delay(100);
             logs.Add($"Runner activated");
             RunnerStatus = RunnerStatus.PreparingToRun;
@@ -78,7 +80,8 @@ namespace Atlas.Core.Apps
             }
 
             logs.Add($"Runner stopped");
-            OnRunnerStopped.Invoke(this);
+            IsRunning = false;
+            OnRunnerStopped.Invoke();
         }
         private async Task ExecuteCommand(ExecutionCommand command)
         {

@@ -9,10 +9,12 @@ namespace Atlas.Core.Apps
 {
     internal struct AppRunnerHandler
     {
-        public IAppRunner AppRunner { get; init; }
+        public IAppExecutable App { get; }
+        public IAppRunner AppRunner { get; }
 
-        internal AppRunnerHandler(IAppRunner appRunner)
+        internal AppRunnerHandler(IAppExecutable app, IAppRunner appRunner)
         {
+            App = app;
             AppRunner = appRunner;
         }
     }
