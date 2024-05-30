@@ -54,17 +54,17 @@ namespace Atlas.Primitives
                 listItem.RecalculateLayout();
             });
         }
-        public List<IRenderable> ChildrenInRect
-        {
-            get
-            {
-                for (int i = 0; i < this.Rect.height && i < this.Children.Count; i++)
-                {
+        //public List<IRenderable> ChildrenInRect
+        //{
+        //    get
+        //    {
+        //        for (int i = 0; i < this.Rect.height && i < this.Children.Count; i++)
+        //        {
 
-                }
-                return Children;
-            }
-        }
+        //        }
+        //        return Children;
+        //    }
+        //}
         public void ClearList()
         {
             SelectedValue = default;

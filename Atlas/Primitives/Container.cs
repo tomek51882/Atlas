@@ -10,8 +10,6 @@ namespace Atlas.Primitives
         public List<IRenderable> Children {  get; private set; } = new List<IRenderable>();
         public StyleProperties StyleProperties { get; set; } = new StyleProperties();
 
-        public Container(){ }
-
         public void AddElement(IRenderable child)
         {
             Children.Add(child);

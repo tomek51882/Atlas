@@ -12,5 +12,7 @@ namespace Atlas.Core.Styles
         internal StyleProperty<int>? ZIndex { get; set; }
         internal StyleProperty<UnitValue<int>>? Width { get; set; }
         internal StyleProperty<UnitValue<int>>? Height { get; set; }
+        internal StyleProperty<bool>? Border { get; set; }
+        internal StyleProperty<AutoLayoutDirection>? AutoLayoutDirection { get; set; }
     }
 }

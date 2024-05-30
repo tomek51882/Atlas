@@ -44,7 +44,8 @@ namespace Atlas.Core
 
             ws.CreateWindow<CalibrationComponent>(new Types.Rect(), "Absolute Bounds (Max Rect size)", new Types.Windows.WindowOptions
             {
-                BorderColor = new Types.Color(0x00ff00)
+                BorderColor = new Types.Color(0x00ff00),
+                Frameless = false,
             });
             //ws.CreateWindow<AppListComponent>(new Types.Rect(0, 0, 126, 24), "Apps", new Types.Windows.WindowOptions
             //{

@@ -143,6 +143,12 @@ namespace Atlas.Core.Render
                 {
                     RecalculateRects(context, child);
                 }
+
+                //Part 2 of rect calculation aka autolayout
+                //if (primitive == default(IPrimitive))
+                //{
+                    
+                //}
             }
             node.NeedsRectRecalculation = false;
         }
@@ -172,14 +178,21 @@ namespace Atlas.Core.Render
                 {
                     context.__ExperimentalInvertColors = true;
                 }
+
+                context.Parent = renderable;
+                //NOTE: Sketchy
+                if (renderable.StyleProperties.Border is not null && renderable.StyleProperties.Border.Value)
+                {
+                    displayBuffer.DrawWindow(context, context.ParentAbsoluteBounds, renderable.StyleProperties.Color?.Value ?? Color.Red, WindowFrame.Window, null);
+                }
             }
 
             if (node.Children?.Count > 0)
             {
-                if (node.Value is IPrimitive primitive)
-                {
-                    context.Parent = primitive;
-                }
+                //if (node.Value is IPrimitive primitive)
+                //{
+                //    context.Parent = renderable;
+                //}
 
                 foreach (RenderTreeNode child in node.Children)
                 {
