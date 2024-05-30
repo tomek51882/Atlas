@@ -1,6 +1,8 @@
 ﻿using Atlas.Core.Apps;
+using Atlas.Database;
 using Atlas.Interfaces;
 using Atlas.Interfaces.Apps;
+using Atlas.Models.Database;
 using Atlas.Models.DTOs;
 
 namespace Atlas.Services
@@ -12,11 +14,47 @@ namespace Atlas.Services
 
         public event Action OnAppListChange = delegate { };
 
+
+        public AppsService()
+        {
+            RestoreFromDB();
+        }
+
+        private void RestoreFromDB()
+        {
+            using (var db = new DatabaseContext())
+            {
+                var apps = db.Apps.ToList();
+
+                foreach (var app in apps)
+                {
+                    if (app.AppType == Types.AppType.MSBuildApp)
+                    {
+                        Apps.Add(new MSBuildApp { 
+                            Name =  app.Name, 
+                            AppType = app.AppType,
+                            ExecutablePath = app.AppData
+                        });
+                    }
+                }
+            }
+        }
+
         public void AddApp(IAppExecutable app)
         {
             if (Apps.Any(x => x.Name == app.Name))
             {
                 return;
+            }
+
+            using (var db = new DatabaseContext())
+            {
+                var saveApp = new SavedAppsDb();
+                saveApp.Name = app.Name;
+                saveApp.AppType = app.AppType;
+                saveApp.AppData = app.ExecutablePath;
+                db.Apps.Add(saveApp);
+                db.SaveChanges();
             }
 
             Apps.Add(app);

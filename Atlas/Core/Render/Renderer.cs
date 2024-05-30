@@ -90,13 +90,20 @@ namespace Atlas.Core.Render
 
         private void RecalculateRects(StylingContext context, RenderTreeNode node)
         {
-            if (node.NeedsRectRecalculation == false || context.Parent is null)
+            if (node.NeedsRectRecalculation == false)
             {
                 return;
             }
 
             if (node.Value is IPrimitive primitive)
             {
+                if (context.Parent == primitive) //VirtualRoot
+                {
+                    primitive.Rect = new Rect(0,0, Console.BufferWidth, Console.BufferHeight);
+                    node.NeedsRectRecalculation = false;
+                }
+
+
                 context.CurrentNodeStyles = primitive.StyleProperties;
                 if (primitive.Rect == context.RectZero)
                 {

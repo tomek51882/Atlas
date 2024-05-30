@@ -6,6 +6,13 @@ namespace Atlas.Interfaces.Apps
     internal class MSBuildApp : AppBase
     {
         private string PathToCsProjFile { get; set; }
+
+        public override string ExecutablePath {
+            get => PathToCsProjFile;
+            set => PathToCsProjFile = value;
+        }
+
+        public MSBuildApp() { }
         public MSBuildApp(ProjectInSolution project) {
             AppType = Types.AppType.MSBuildApp;
             Name = project.ProjectName;

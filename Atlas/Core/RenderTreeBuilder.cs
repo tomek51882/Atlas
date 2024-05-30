@@ -125,12 +125,14 @@ namespace Atlas.Core
     {
         public List<IRenderable> Children { get; } = new List<IRenderable>();
         public Rect Rect { get; set; }
-        public StyleProperties StyleProperties { get; set; }
+        public StyleProperties StyleProperties { get; set; } = new StyleProperties();
 
         internal VirtualRoot()
         {
             //Temp
-            Rect = new Rect(0,0, Console.BufferWidth, Console.BufferHeight);
+            //Rect = new Rect(0,0,Console.BufferWidth, Console.BufferHeight);
+            StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
+            StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
         }
 
         public void AddElement(IRenderable child)

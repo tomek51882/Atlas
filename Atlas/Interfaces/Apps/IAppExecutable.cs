@@ -6,7 +6,8 @@ namespace Atlas.Interfaces.Apps
     {
         public string Name { get; }
         public AppType AppType { get; }
-        public IAppRunner CurrentRunner { get; }
+        public string ExecutablePath { get; }
+        //public IAppRunner CurrentRunner { get; }
         //public string ExecutablePath { get; }
         //public string ExecutableArguments { get; }
 

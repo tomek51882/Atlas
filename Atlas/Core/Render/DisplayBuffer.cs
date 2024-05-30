@@ -29,6 +29,8 @@ namespace Atlas.Core.Render
             cursorY = 0;
             displayBuffer = new CharInfo[width, height];
             zIndexMap = new int[width * height];
+            Console.Clear();
+            Console.SetCursorPosition(cursorX, cursorY);
             //buffer = new Memory<CharInfo>();
         }
 
@@ -58,9 +60,6 @@ namespace Atlas.Core.Render
 
                     stringBuilder.Append(charInfo.Char);
                 }
-
-                // Reset color at the end of each line to default
-                stringBuilder.Append("\x1b[0m");
 
                 // Avoid adding a new line on the last row
                 if (y < height - 1)

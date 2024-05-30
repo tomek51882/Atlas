@@ -48,6 +48,7 @@ namespace Atlas.Components
             };
 
             AppService.OnAppListChange += HandleAppListChange;
+            HandleAppListChange();
         }
 
         private void HandleAppListChange()

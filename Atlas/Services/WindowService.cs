@@ -1,6 +1,7 @@
 ﻿using Atlas.Attributes;
 using Atlas.Components;
 using Atlas.Core.Render;
+using Atlas.Core.Styles;
 using Atlas.Extensions;
 using Atlas.Interfaces;
 using Atlas.Interfaces.Renderables;
@@ -58,6 +59,11 @@ namespace Atlas.Services
             }
 
             FocusedWindow = new Window(windowRect, component, ShortIdGenerator.Generate(), options.Value);
+            if (windowRect == Rect.Zero)
+            {
+                FocusedWindow.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
+                FocusedWindow.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
+            }
             FocusedWindow.IsFocused = true;
             FocusedWindow.Title = windowTitle;
             OpenedWindows.Add(FocusedWindow.WindowId, FocusedWindow);

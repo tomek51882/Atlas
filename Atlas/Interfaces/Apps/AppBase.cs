@@ -11,7 +11,11 @@ namespace Atlas.Interfaces.Apps
     {
         public string Name { get; internal set; }
         public AppType AppType { get; internal set; }
-        public IAppRunner CurrentRunner { get; internal set; }
+        public virtual string ExecutablePath {
+            get => throw new InvalidOperationException();
+            set => throw new InvalidOperationException();
+        }
+
 
         public virtual ExecutionCommand? PreBuild() { return null; }
         public virtual ExecutionCommand? Build() { return null; }
