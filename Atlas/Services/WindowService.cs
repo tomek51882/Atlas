@@ -35,8 +35,8 @@ namespace Atlas.Services
             this.componentActivatorService = componentActivatorService;
 
             this.inputSystem.OnKeyPress += HandleKeyPress;
-            (_, statusBar) = CreateWindow<StatusBar>(new Types.Rect(0, 26, 130, 1), "", new WindowOptions { Frameless = true });
-            (_, inputSystemDebugLine) = CreateWindow<InputSystemDebugLine>(new Types.Rect(0, 25, 130, 1), "Input Debug", new WindowOptions { Frameless = true });
+            //(_, statusBar) = CreateWindow<StatusBar>(new Types.Rect(0, 26, 130, 1), "", new WindowOptions { Frameless = true });
+            //(_, inputSystemDebugLine) = CreateWindow<InputSystemDebugLine>(new Types.Rect(0, 25, 130, 1), "Input Debug", new WindowOptions { Frameless = true });
         }
 
         public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle) where T : IComponent, new()

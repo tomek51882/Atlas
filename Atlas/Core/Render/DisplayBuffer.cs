@@ -213,28 +213,29 @@ namespace Atlas.Core.Render
                 }
             }
         }
-        internal void DrawWindow(RenderContext context, Rect bounds, Color borderColor, WindowFrame frameMap, string? windowTitle)
+        internal void DrawWindow(RenderContext context, Color borderColor, WindowFrame frameMap, string? windowTitle)
         {
-            SetCursor(bounds.x, bounds.y);
+            //bounds = bounds.RelativeToAbsolute(context.ParentAbsoluteBounds);
+            SetCursor(context.CurrentRect.x, context.CurrentRect.y);
             Write(context,frameMap.fragmentMap[WindowFrameFragment.TopLeft], borderColor);
 
-            for (int i = 1; i < bounds.width - 1; i++)
+            for (int i = 1; i < context.CurrentRect.width - 1; i++)
             {
                 Write(context, frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
             }
             Write(context, frameMap.fragmentMap[WindowFrameFragment.TopRight], borderColor);
 
-            for (int j = 1; j < bounds.height - 1; j++)
+            for (int j = 1; j < context.CurrentRect.height - 1; j++)
             {
-                SetCursor(bounds.x, bounds.y + j);
+                SetCursor(context.CurrentRect.x, context.CurrentRect.y + j);
                 Write(context, frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
-                SetCursor(bounds.x + bounds.width - 1, bounds.y + j);
+                SetCursor(context.CurrentRect.x + context.CurrentRect.width - 1, context.CurrentRect.y + j);
                 Write(context, frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
             }
 
-            SetCursor(bounds.x, bounds.y + bounds.height - 1);
+            SetCursor(context.CurrentRect.x, context.CurrentRect.y + context.CurrentRect.height - 1);
             Write(context, frameMap.fragmentMap[WindowFrameFragment.BottomLeft], borderColor);
-            for (int i = 1; i < bounds.width - 1; i++)
+            for (int i = 1; i < context.CurrentRect.width - 1; i++)
             {
                 Write(context, frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
             }
@@ -243,7 +244,7 @@ namespace Atlas.Core.Render
 
             if (windowTitle is not null)
             {
-                Rect windowTitleArea = new Rect(bounds.x + 2, bounds.y, bounds.width - 3, 1);
+                Rect windowTitleArea = new Rect(context.CurrentRect.x + 2, context.CurrentRect.y, context.CurrentRect.width - 3, 1);
                 ForceWriteText(context, windowTitleArea, windowTitle, borderColor, Color.DefaultBackground);
             }
         }

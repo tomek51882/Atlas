@@ -1,11 +1,11 @@
-﻿using Atlas.Components;
+﻿using Atlas.Extensions;
 using Atlas.Interfaces;
 using Atlas.Interfaces.Renderables;
-using Atlas.Primitives;
 using Atlas.Types;
 using Atlas.Types.Windows;
 using Atlas.Utils;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Atlas.Core.Render
@@ -99,7 +99,7 @@ namespace Atlas.Core.Render
             {
                 if (context.Parent == primitive) //VirtualRoot
                 {
-                    primitive.Rect = new Rect(0,0, Console.BufferWidth, Console.BufferHeight);
+                    primitive.Rect = new Rect(0, 0, Console.BufferWidth, Console.BufferHeight);
                     node.NeedsRectRecalculation = false;
                 }
 
@@ -109,7 +109,7 @@ namespace Atlas.Core.Render
                 {
                     int calculatedWidth = 0;
                     int calculatedHeight = 0;
-                    var padding = (context.Parent.StyleProperties.Padding?.Value * 2) ?? 0;
+                    Rect finalRect = new Rect(primitive.Rect.x, primitive.Rect.y, 0,0);
 
                     if (context.CurrentNodeStyles.Width is not null)
                     {
@@ -131,7 +131,17 @@ namespace Atlas.Core.Render
                         };
                     }
 
-                    primitive.Rect = new Rect(primitive.Rect.x, primitive.Rect.y, calculatedWidth - padding, calculatedHeight - padding);
+                    finalRect.width = calculatedWidth;
+                    finalRect.height = calculatedHeight;
+
+                    if (context.Parent.StyleProperties.Padding is not null)
+                    {
+                        finalRect = finalRect
+                            .AddPadding(context.Parent.StyleProperties.Padding.Value)
+                            .Move(context.Parent.StyleProperties.Padding.Value, context.Parent.StyleProperties.Padding.Value);
+                    }
+
+                    primitive.Rect = finalRect;
                 }
 
                 context.Parent = primitive;
@@ -145,10 +155,17 @@ namespace Atlas.Core.Render
                 }
 
                 //Part 2 of rect calculation aka autolayout
-                //if (primitive == default(IPrimitive))
-                //{
-                    
-                //}
+                if (node.Value is IPrimitive primitive2)
+                {
+                    if (primitive2.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
+                    {
+
+                    }
+                    else if (primitive2.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Row)
+                    {
+
+                    }
+                }
             }
             node.NeedsRectRecalculation = false;
         }
@@ -157,6 +174,7 @@ namespace Atlas.Core.Render
         {
             if (node.Value is IPrimitive renderable)
             {
+                context.CurrentRect = renderable.Rect.RelativeToAbsolute(context.ParentAbsoluteBounds);
                 context.CurrentStyleProperties = renderable.StyleProperties;
 
                 if (renderable is IWindowable window)
@@ -178,25 +196,20 @@ namespace Atlas.Core.Render
                 {
                     context.__ExperimentalInvertColors = true;
                 }
-
-                context.Parent = renderable;
-                //NOTE: Sketchy
                 if (renderable.StyleProperties.Border is not null && renderable.StyleProperties.Border.Value)
                 {
-                    displayBuffer.DrawWindow(context, context.ParentAbsoluteBounds, renderable.StyleProperties.Color?.Value ?? Color.Red, WindowFrame.Window, null);
+                    displayBuffer.DrawWindow(context, renderable.StyleProperties.Color?.Value ?? Color.Red, WindowFrame.Window, null);
                 }
+
+                context.Parent = renderable;
+                context.ParentAbsoluteBounds = context.CurrentRect;
             }
 
             if (node.Children?.Count > 0)
             {
-                //if (node.Value is IPrimitive primitive)
-                //{
-                //    context.Parent = renderable;
-                //}
-
                 foreach (RenderTreeNode child in node.Children)
                 {
-                    if (child.Value is IPrimitive childPrimitive && childPrimitive.Rect.IsInside(context.ParentRelativeBounds) == false)
+                    if (child.Value is IPrimitive childPrimitive && childPrimitive.Rect.IsInside(context.ParentAbsoluteBounds) == false)
                     {
                         continue;
                     }
@@ -230,7 +243,7 @@ namespace Atlas.Core.Render
                 var darkenedBorderColor = ColorUtils.HSL2RGB(hslColor.h, hslColor.s, hslColor.l);
                 borderColor = new Color(darkenedBorderColor.r, darkenedBorderColor.g, darkenedBorderColor.b);
             }
-            displayBuffer.DrawWindow(context, window.Rect, borderColor, frameMap, $" {window.Title} ");
+            displayBuffer.DrawWindow(context, borderColor, frameMap, $" {window.Title} ");
         }
 
         public void MountRenderable(IRenderable renderable)
