@@ -3,6 +3,7 @@ using Atlas.Components;
 using Atlas.Extensions;
 using Atlas.Interfaces;
 using Atlas.Services;
+using Atlas.Types;
 using Atlas.Utils;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -42,16 +43,17 @@ namespace Atlas.Core
 
             WindowService ws = Unsafe.As<WindowService>(_windowService);
 
-            ws.CreateWindow<CalibrationComponent>(new Types.Rect(), "Absolute Bounds (Max Rect size)", new Types.Windows.WindowOptions
-            {
-                BorderColor = new Types.Color(0x00ff00),
-                Frameless = false,
-            });
-            //ws.CreateWindow<AppListComponent>(new Types.Rect(0, 0, 126, 24), "Apps", new Types.Windows.WindowOptions
+            //ws.CreateWindow<CalibrationComponent>(new Types.Rect(), "Absolute Bounds (Max Rect size)", new Types.Windows.WindowOptions
             //{
-            //    WindowShortcut = new ConsoleKeyInfo().FromKey("A"),
-            //    BorderColor = new Types.Color(0xFF0000)
+            //    BorderColor = new Types.Color(0x00ff00),
+            //    Frameless = false,
             //});
+            ws.CreateWindow<AppListComponent>(Rect.Zero, new Types.Windows.WindowOptions
+            {
+                WindowTitle = "Apps",
+                WindowShortcut = new ConsoleKeyInfo().FromKey("A"),
+                BorderColor = new Types.Color(0xFF0000)
+            });
 
             //ws.CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), "File Explorer", new Types.Windows.WindowOptions { WindowShortcut = new ConsoleKeyInfo().FromKey("E") });
 

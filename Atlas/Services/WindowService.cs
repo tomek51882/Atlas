@@ -20,10 +20,16 @@ namespace Atlas.Services
         private readonly IServiceProvider serviceProvider;
         private readonly IComponentActivatorService componentActivatorService;
 
+        private readonly Container mainContainer;
+        private readonly Container windowsContainer;
+        private readonly Container statusContainer;
+        private readonly Container inputContainer;
 
         private readonly InputSystemDebugLine inputSystemDebugLine;
         private readonly StatusBar statusBar;
+
         private Window? FocusedWindow;
+
         private Dictionary<string, Window> OpenedWindows { get; set; } = new Dictionary<string, Window>();
         private Dictionary<KeyShortcut, Window> WindowsShortcuts = new Dictionary<KeyShortcut, Window>();
 
@@ -35,15 +41,40 @@ namespace Atlas.Services
             this.componentActivatorService = componentActivatorService;
 
             this.inputSystem.OnKeyPress += HandleKeyPress;
-            //(_, statusBar) = CreateWindow<StatusBar>(new Types.Rect(0, 26, 130, 1), "", new WindowOptions { Frameless = true });
-            //(_, inputSystemDebugLine) = CreateWindow<InputSystemDebugLine>(new Types.Rect(0, 25, 130, 1), "Input Debug", new WindowOptions { Frameless = true });
+
+
+            mainContainer = new Container();
+            mainContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
+            mainContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
+            mainContainer.StyleProperties.AutoLayoutDirection = new Core.Styles.StyleProperty<Types.AutoLayoutDirection>(Types.AutoLayoutDirection.Column);
+
+            windowsContainer = new Container();
+            windowsContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
+            windowsContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
+
+            statusContainer = new Container();
+            statusContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
+            statusContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(1, Types.UnitValue<int>.Unit.Char));
+
+            inputContainer = new Container();
+            inputContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
+            inputContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(1, Types.UnitValue<int>.Unit.Char));
+
+            mainContainer.AddElement(windowsContainer);
+            mainContainer.AddElement(statusContainer);
+            mainContainer.AddElement(inputContainer);
+            inputContainer.AddElement(new InputSystemDebugLine());
+            statusContainer.AddElement(new StatusBar());
+
+
+            Unsafe.As<Renderer>(renderer).MountRenderable(mainContainer);
         }
 
-        public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle) where T : IComponent, new()
+        public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect) where T : IComponent, new()
         {
-            return CreateWindow<T>(windowRect, windowTitle, null);
+            return CreateWindow<T>(windowRect, null);
         }
-        public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, string windowTitle, WindowOptions? options) where T : IComponent, new()
+        public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, WindowOptions? options) where T : IComponent, new()
         {
             if (FocusedWindow is not null)
             {
@@ -65,7 +96,7 @@ namespace Atlas.Services
                 FocusedWindow.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
             }
             FocusedWindow.IsFocused = true;
-            FocusedWindow.Title = windowTitle;
+            FocusedWindow.Title = options.Value.WindowTitle;
             OpenedWindows.Add(FocusedWindow.WindowId, FocusedWindow);
 
             if (options.HasValue) //kinda pointless
@@ -86,7 +117,8 @@ namespace Atlas.Services
                 FocusedWindow.StyleProperties.Color = new Core.Styles.StyleProperty<Color>(windowBorderColor);
             }
 
-            Unsafe.As<Renderer>(renderer).MountRenderable(FocusedWindow);
+            //Unsafe.As<Renderer>(renderer).MountRenderable(FocusedWindow);
+            windowsContainer.AddElement(FocusedWindow);
             return (FocusedWindow.WindowId, component);
         }
 
@@ -135,8 +167,13 @@ namespace Atlas.Services
                 return;
             }
 
-            if(key.Key == ConsoleKey.Q) {
-                CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), "File Explorer", new Types.Windows.WindowOptions { WindowShortcut = new ConsoleKeyInfo().FromKey("E") });
+            if (key.Key == ConsoleKey.Q)
+            {
+                CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), new Types.Windows.WindowOptions
+                {
+                    WindowShortcut = new ConsoleKeyInfo().FromKey("E"),
+                    WindowTitle = "File Explorer"
+                });
             }
 
             if (WindowsShortcuts.TryGetValue(key, out var window))

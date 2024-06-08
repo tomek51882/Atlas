@@ -7,7 +7,7 @@ namespace Atlas.Primitives
     internal class Container : IPrimitive, IRenderableContainer
     {
         public Rect Rect { get; set; }
-        public List<IRenderable> Children {  get; private set; } = new List<IRenderable>();
+        public List<IRenderable> Children {  get; set; } = new List<IRenderable>();
         public StyleProperties StyleProperties { get; set; } = new StyleProperties();
 
         public void AddElement(IRenderable child)

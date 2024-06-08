@@ -67,6 +67,7 @@ namespace Atlas.Core.Render
                     stringBuilder.AppendLine();
                 }
             }
+            stringBuilder.Append("\x1b[0m");
             Console.Write(stringBuilder.ToString());
             stringBuilder.Clear();
             ClearBuffer();

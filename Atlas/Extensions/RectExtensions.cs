@@ -7,8 +7,6 @@ namespace Atlas.Extensions
         public static Rect AddPadding(this Rect rect, int padding)
         {
             var newRect = rect;
-            //newRect.x += padding;
-            //newRect.y += padding;
             newRect.width -= padding * 2;
             newRect.height -= padding * 2;
             if (newRect.width < 0)
@@ -18,6 +16,26 @@ namespace Atlas.Extensions
             if (newRect.height < 0)
             {
                 newRect.height = 0;
+            }
+            return newRect;
+        }
+        public static Rect AddVerticalPadding(this Rect rect, int padding)
+        {
+            var newRect = rect;
+            newRect.height -= padding * 2;
+            if (newRect.height < 0)
+            {
+                newRect.height = 0;
+            }
+            return newRect;
+        }
+        public static Rect AddHorizontalPadding(this Rect rect, int padding)
+        {
+            var newRect = rect;
+            newRect.width -= padding * 2;
+            if (newRect.width < 0)
+            {
+                newRect.width = 0;
             }
             return newRect;
         }

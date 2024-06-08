@@ -4,6 +4,7 @@ using Atlas.Interfaces.Renderables;
 using Atlas.Types;
 using Atlas.Types.Windows;
 using Atlas.Utils;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -94,39 +95,38 @@ namespace Atlas.Core.Render
             {
                 return;
             }
-
+            bool isPrimitive = false;
             if (node.Value is IPrimitive primitive)
             {
+                isPrimitive = true;
                 if (context.Parent == primitive) //VirtualRoot
                 {
                     primitive.Rect = new Rect(0, 0, Console.BufferWidth, Console.BufferHeight);
                     node.NeedsRectRecalculation = false;
                 }
 
-
                 context.CurrentNodeStyles = primitive.StyleProperties;
                 if (primitive.Rect == context.RectZero)
                 {
                     int calculatedWidth = 0;
                     int calculatedHeight = 0;
-                    Rect finalRect = new Rect(primitive.Rect.x, primitive.Rect.y, 0,0);
+                    Rect finalRect = new Rect(primitive.Rect.x, primitive.Rect.y, 0, 0);
 
                     if (context.CurrentNodeStyles.Width is not null)
                     {
                         calculatedWidth = context.CurrentNodeStyles.Width.Value.unit switch
                         {
                             UnitValue<int>.Unit.Char => context.CurrentNodeStyles.Width.Value.value,
-                            UnitValue<int>.Unit.Percent => context.CurrentNodeStyles.Width.Value.value / 100 * context.Parent.Rect.width,
+                            UnitValue<int>.Unit.Percent => (int)((float)context.CurrentNodeStyles.Width.Value.value / 100 * context.Parent.Rect.width),
                             _ => 0
                         };
                     }
-
                     if (context.CurrentNodeStyles.Height is not null)
                     {
                         calculatedHeight = context.CurrentNodeStyles.Height.Value.unit switch
                         {
                             UnitValue<int>.Unit.Char => context.CurrentNodeStyles.Height.Value.value,
-                            UnitValue<int>.Unit.Percent => context.CurrentNodeStyles.Height.Value.value / 100 * context.Parent.Rect.height,
+                            UnitValue<int>.Unit.Percent => (int)((float)context.CurrentNodeStyles.Height.Value.value / 100 * context.Parent.Rect.height),
                             _ => 0
                         };
                     }
@@ -134,11 +134,22 @@ namespace Atlas.Core.Render
                     finalRect.width = calculatedWidth;
                     finalRect.height = calculatedHeight;
 
-                    if (context.Parent.StyleProperties.Padding is not null)
+                    if (context.Parent!.StyleProperties.Padding is not null)
                     {
-                        finalRect = finalRect
-                            .AddPadding(context.Parent.StyleProperties.Padding.Value)
-                            .Move(context.Parent.StyleProperties.Padding.Value, context.Parent.StyleProperties.Padding.Value);
+                        if (context.Parent.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
+                        {
+                            finalRect = finalRect.AddHorizontalPadding(context.Parent.StyleProperties.Padding.Value);
+                        }
+                        else if (context.Parent.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
+                        {
+                            finalRect = finalRect.AddVerticalPadding(context.Parent.StyleProperties.Padding.Value);
+                        }
+                        else
+                        {
+                            finalRect = finalRect.AddPadding(context.Parent.StyleProperties.Padding.Value);
+                        }
+
+                        finalRect = finalRect.Move(context.Parent.StyleProperties.Padding.Value, context.Parent.StyleProperties.Padding.Value);
                     }
 
                     primitive.Rect = finalRect;
@@ -154,22 +165,30 @@ namespace Atlas.Core.Render
                     RecalculateRects(context, child);
                 }
 
-                //Part 2 of rect calculation aka autolayout
-                if (node.Value is IPrimitive primitive2)
+                if (isPrimitive)
                 {
-                    if (primitive2.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
-                    {
+                    primitive = Unsafe.As<IPrimitive>(node.Value);
 
+                    if (primitive.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
+                    {
+                        var recalculationContext = new RectRecalculationContext();
+
+                        recalculationContext.Fill(node.Children);
+                        recalculationContext.AdjustToRect(primitive.Rect.AddPadding(primitive.StyleProperties.Padding?.Value ?? 0));
+                        recalculationContext.ApplyAdjustment(node.Children);
+
+                        recalculationContext.Dispose();
                     }
-                    else if (primitive2.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Row)
+                    else if (primitive.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Row)
                     {
 
                     }
                 }
             }
+
             node.NeedsRectRecalculation = false;
         }
-
+        
         private void RenderElement(RenderContext context, RenderTreeNode node)
         {
             if (node.Value is IPrimitive renderable)
@@ -209,7 +228,7 @@ namespace Atlas.Core.Render
             {
                 foreach (RenderTreeNode child in node.Children)
                 {
-                    if (child.Value is IPrimitive childPrimitive && childPrimitive.Rect.IsInside(context.ParentAbsoluteBounds) == false)
+                    if (child.Value is IPrimitive childPrimitive && context.CurrentRect.IsInside(context.ParentAbsoluteBounds) == false)
                     {
                         continue;
                     }
@@ -261,6 +280,7 @@ namespace Atlas.Core.Render
         }
         public void EnqueueDisposal(IRenderable renderable)
         {
+            Debugger.Break();
             if (renderable is IDisposable disposable)
             {
                 disposable.Dispose();
@@ -321,5 +341,6 @@ namespace Atlas.Core.Render
                 }
             }
         }
+    
     }
 }

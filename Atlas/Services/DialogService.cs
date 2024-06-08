@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Collections;
 using Atlas.Interfaces.Renderables;
+using Atlas.Types.Windows;
 
 namespace Atlas.Services
 {
@@ -18,26 +19,26 @@ namespace Atlas.Services
             _componentActivatorService = activatorService;
         }
 
-        public void OpenPopup<T>(string popupTitle, PopupParameters<T> parameters) where T : IComponent, new()
-        {
-            (_, var component) = _windowService.CreateWindow<T>(new Rect(50, 10, 40, 8), popupTitle);
+        //public void OpenPopup<T>(string popupTitle, PopupParameters<T> parameters) where T : IComponent, new()
+        //{
+        //    (_, var component) = _windowService.CreateWindow<T>(new Rect(50, 10, 40, 8), popupTitle);
 
-            var targetType = component.GetType();
+        //    var targetType = component.GetType();
 
-            foreach (var parameter in parameters)
-            {
-                PropertyInfo? property = targetType.GetProperty(parameter.Key, BindingFlags.Public | BindingFlags.Instance);
+        //    foreach (var parameter in parameters)
+        //    {
+        //        PropertyInfo? property = targetType.GetProperty(parameter.Key, BindingFlags.Public | BindingFlags.Instance);
 
-                if (property is not null && property.CanWrite)
-                {
-                    property.SetValue(component, parameter.Value);
-                }
-            }
-        }
+        //        if (property is not null && property.CanWrite)
+        //        {
+        //            property.SetValue(component, parameter.Value);
+        //        }
+        //    }
+        //}
 
         public Task<DialogResult> ShowDialogAsync<T>(string popupTitle, PopupParameters<T> parameters) where T : IComponent, new()
         {
-            (var windowId, var component) = _windowService.CreateWindow<T>(new Rect(40, 8, 40, 8), popupTitle);
+            (var windowId, var component) = _windowService.CreateWindow<T>(new Rect(40, 8, 40, 8), new WindowOptions { WindowTitle = popupTitle });
 
             var injectedReference = _componentActivatorService.Inject<DialogReference>(component);
             if (injectedReference is null)
