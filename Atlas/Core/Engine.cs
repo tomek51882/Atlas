@@ -43,17 +43,18 @@ namespace Atlas.Core
 
             WindowService ws = Unsafe.As<WindowService>(_windowService);
 
-            //ws.CreateWindow<CalibrationComponent>(new Types.Rect(), "Absolute Bounds (Max Rect size)", new Types.Windows.WindowOptions
-            //{
-            //    BorderColor = new Types.Color(0x00ff00),
-            //    Frameless = false,
-            //});
-            ws.CreateWindow<AppListComponent>(Rect.Zero, new Types.Windows.WindowOptions
+            ws.CreateWindow<CalibrationComponent>(new Types.Rect(0,0, 40,10), new Types.Windows.WindowOptions
             {
-                WindowTitle = "Apps",
-                WindowShortcut = new ConsoleKeyInfo().FromKey("A"),
-                BorderColor = new Types.Color(0xFF0000)
+                WindowTitle = "Absolute Bounds (Max Rect size)",
+                BorderColor = new Types.Color(0xffa500),
+                Frameless = false,
             });
+            //ws.CreateWindow<AppListComponent>(Rect.Zero, new Types.Windows.WindowOptions
+            //{
+            //    WindowTitle = "Apps",
+            //    WindowShortcut = new ConsoleKeyInfo().FromKey("A"),
+            //    BorderColor = new Types.Color(0xFF0000)
+            //});
 
             //ws.CreateWindow<FileExplorer>(new Types.Rect(40, 0, 86, 24), "File Explorer", new Types.Windows.WindowOptions { WindowShortcut = new ConsoleKeyInfo().FromKey("E") });
 

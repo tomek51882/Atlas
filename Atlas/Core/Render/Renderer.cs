@@ -1,13 +1,13 @@
-﻿using Atlas.Extensions;
+﻿using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
+using Atlas.Core.Layout;
+using Atlas.Extensions;
 using Atlas.Interfaces;
 using Atlas.Interfaces.Renderables;
 using Atlas.Types;
+using Atlas.Types.Style;
 using Atlas.Types.Windows;
 using Atlas.Utils;
-using System.Buffers;
-using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 namespace Atlas.Core.Render
 {
@@ -20,6 +20,8 @@ namespace Atlas.Core.Render
         private List<Task> pendingTasks = new List<Task>();
         private ConcurrentQueue<IComponent> initializationQueue = new ConcurrentQueue<IComponent>();
         private ConcurrentQueue<IRenderable> disposeQueue = new ConcurrentQueue<IRenderable>();
+
+        private LayoutEngine layoutEngine = new LayoutEngine();
 
         public Renderer()
         {
@@ -42,11 +44,13 @@ namespace Atlas.Core.Render
 
             treeBuilder.UpdateTree(mountedRenderables);
 
-            StylingContext stylingContext = new StylingContext(treeBuilder.Root);
+            //StylingContext stylingContext = new StylingContext(treeBuilder.Root);
             RenderContext renderContext = new RenderContext(treeBuilder.Root);
 
-            RecalculateRects(stylingContext, treeBuilder.RenderTree);
-            RenderElement(renderContext, treeBuilder.RenderTree);
+            //RecalculateRects(stylingContext, treeBuilder.RenderTree);
+            layoutEngine.CalculateLayout_Old(treeBuilder.RenderTree);
+            __DEBUG_DrawBorders(renderContext, treeBuilder.RenderTree);
+            //RenderElement(renderContext, treeBuilder.RenderTree);
 
             displayBuffer.Flush();
 
@@ -77,8 +81,7 @@ namespace Atlas.Core.Render
             {
                 var task = Task.Factory.StartNew(static (rawComponent) =>
                 {
-                    var component = rawComponent as IComponent;
-                    if (component is not null)
+                    if (rawComponent is IComponent component)
                     {
                         _ = component.OnInitializedAsync();
                     }
@@ -116,8 +119,8 @@ namespace Atlas.Core.Render
                     {
                         calculatedWidth = context.CurrentNodeStyles.Width.Value.unit switch
                         {
-                            UnitValue<int>.Unit.Char => context.CurrentNodeStyles.Width.Value.value,
-                            UnitValue<int>.Unit.Percent => (int)((float)context.CurrentNodeStyles.Width.Value.value / 100 * context.Parent.Rect.width),
+                            Unit.Char => context.CurrentNodeStyles.Width.Value.value,
+                            Unit.Percent => (int)((float)context.CurrentNodeStyles.Width.Value.value / 100 * context.Parent.Rect.width),
                             _ => 0
                         };
                     }
@@ -125,8 +128,8 @@ namespace Atlas.Core.Render
                     {
                         calculatedHeight = context.CurrentNodeStyles.Height.Value.unit switch
                         {
-                            UnitValue<int>.Unit.Char => context.CurrentNodeStyles.Height.Value.value,
-                            UnitValue<int>.Unit.Percent => (int)((float)context.CurrentNodeStyles.Height.Value.value / 100 * context.Parent.Rect.height),
+                            Unit.Char => context.CurrentNodeStyles.Height.Value.value,
+                            Unit.Percent => (int)((float)context.CurrentNodeStyles.Height.Value.value / 100 * context.Parent.Rect.height),
                             _ => 0
                         };
                     }
@@ -136,11 +139,11 @@ namespace Atlas.Core.Render
 
                     if (context.Parent!.StyleProperties.Padding is not null)
                     {
-                        if (context.Parent.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
+                        if (context.Parent.StyleProperties.FlexDirection?.Value == FlexDirection.Column)
                         {
                             finalRect = finalRect.AddHorizontalPadding(context.Parent.StyleProperties.Padding.Value);
                         }
-                        else if (context.Parent.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
+                        else if (context.Parent.StyleProperties.FlexDirection?.Value == FlexDirection.Column)
                         {
                             finalRect = finalRect.AddVerticalPadding(context.Parent.StyleProperties.Padding.Value);
                         }
@@ -169,7 +172,7 @@ namespace Atlas.Core.Render
                 {
                     primitive = Unsafe.As<IPrimitive>(node.Value);
 
-                    if (primitive.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Column)
+                    if (primitive.StyleProperties.FlexDirection?.Value == FlexDirection.Column)
                     {
                         var recalculationContext = new RectRecalculationContext();
 
@@ -179,7 +182,7 @@ namespace Atlas.Core.Render
 
                         recalculationContext.Dispose();
                     }
-                    else if (primitive.StyleProperties.AutoLayoutDirection?.Value == AutoLayoutDirection.Row)
+                    else if (primitive.StyleProperties.FlexDirection?.Value == FlexDirection.Row)
                     {
 
                     }
@@ -188,7 +191,7 @@ namespace Atlas.Core.Render
 
             node.NeedsRectRecalculation = false;
         }
-        
+
         private void RenderElement(RenderContext context, RenderTreeNode node)
         {
             if (node.Value is IPrimitive renderable)
@@ -237,6 +240,21 @@ namespace Atlas.Core.Render
             }
         }
 
+        private void __DEBUG_DrawBorders(RenderContext context, RenderTreeNode node)
+        {
+            if (node.Value is IPrimitive renderable)
+            {
+                displayBuffer.DrawFrame(context, node.ComputedRect, renderable.StyleProperties.Color?.Value ?? new Color(0xff0000));
+            }
+            if (node.Children?.Count > 0)
+            {
+                foreach (RenderTreeNode child in node.Children)
+                {
+                    __DEBUG_DrawBorders(context, child);
+                }
+            }
+        }
+
         private void FillArea(RenderContext context, IPrimitiveFiller filler)
         {
             displayBuffer.FillEmptyArea(context, filler.Rect, filler.StyleProperties.BackgroundColor?.Value ?? Color.DefaultBackground);
@@ -280,7 +298,11 @@ namespace Atlas.Core.Render
         }
         public void EnqueueDisposal(IRenderable renderable)
         {
-            Debugger.Break();
+            if (renderable == null)
+            {
+                return;
+            }
+            //Debugger.Break();
             if (renderable is IDisposable disposable)
             {
                 disposable.Dispose();
@@ -341,6 +363,5 @@ namespace Atlas.Core.Render
                 }
             }
         }
-    
     }
 }

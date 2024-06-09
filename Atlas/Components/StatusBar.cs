@@ -29,8 +29,8 @@ namespace Atlas.Components
             layout.Add(new Text("[D] Diagnostics").CopyStyle(text));
             layout.Add(new Text($" | {VersionInfo.GetCommitHash()}").CopyStyle(text));
 
-            layout.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
-            layout.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(1, UnitValue<int>.Unit.Char));
+            layout.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
+            layout.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(1, Unit.Char));
         }
 
         public override void BuildRenderTree(RenderTreeBuilder builder)

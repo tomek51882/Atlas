@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Interfaces.Styles
+namespace Atlas.Types.Style
 {
-    internal interface IStyleProperty
+    internal enum FlexDirection
     {
+        Column, Row
     }
 }

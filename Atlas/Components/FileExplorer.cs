@@ -28,8 +28,8 @@ namespace Atlas.Components
                 row.Add(new Text(item.Name));
                 row.Add(new RowSpacer());
             };
-            FileList.StyleProperties.Width = new Core.Styles.StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
-            FileList.StyleProperties.Height = new Core.Styles.StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
+            FileList.StyleProperties.Width = new Core.Styles.StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
+            FileList.StyleProperties.Height = new Core.Styles.StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
             LoadFiles();
         }
 

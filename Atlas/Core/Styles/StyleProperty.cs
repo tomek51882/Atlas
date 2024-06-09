@@ -9,9 +9,6 @@ namespace Atlas.Core.Styles
     internal class StyleProperty<T>
     {
         public T Value { get; set; }
-        public StyleProperty(T value)
-        {
-            Value = value;
-        }
+        public StyleProperty(T value) => Value = value;
     }
 }

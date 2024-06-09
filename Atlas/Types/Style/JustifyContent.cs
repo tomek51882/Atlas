@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Atlas.Types
+namespace Atlas.Types.Style
 {
-    internal enum AutoLayoutDirection
+    internal enum JustifyContent
     {
-        Column, Row
+        FlexStart, Center, FlexEnd, SpaceBetween, SpaceAround, SpaceEvenly
     }
 }

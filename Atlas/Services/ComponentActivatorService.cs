@@ -84,7 +84,8 @@ namespace Atlas.Services
                     | BindingFlags.Instance)
                 .Where(x => x.IsDefined(typeof(InjectAttribute), false));
 
-            var property = properties.Where(x => x.PropertyType == typeof(T)).FirstOrDefault();
+            var property = properties
+                .FirstOrDefault(x => x.PropertyType == typeof(T));
 
             if (property is null)
             {

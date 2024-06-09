@@ -21,8 +21,8 @@ namespace Atlas.Components
             var test = new RowSpacer();
             test.StyleProperties.BackgroundColor = new StyleProperty<Color>(new Color(0x2B2D31));
             layout.Add(test);
-            layout.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
-            layout.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(1, UnitValue<int>.Unit.Char));
+            layout.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
+            layout.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(1, Unit.Char));
             //layout.Rect = new Types.Rect(0, 0, 20, 1);
 
         }

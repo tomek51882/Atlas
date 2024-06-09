@@ -18,10 +18,7 @@ namespace Atlas.Primitives
 
         public virtual Rect Rect
         {
-            get
-            {
-                return _rect;
-            }
+            get => _rect;
             set
             {
                 _rect = value;

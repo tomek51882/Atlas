@@ -1,5 +1,8 @@
 ﻿using Atlas.Core;
+using Atlas.Core.Styles;
 using Atlas.Primitives;
+using Atlas.Types;
+using Atlas.Types.Style;
 namespace Atlas.Components
 {
     internal class CalibrationComponent : ComponentBase
@@ -10,50 +13,36 @@ namespace Atlas.Components
         private Container Container3 { get; set; }
         public override void OnInitialized()
         {
-            Parent = new Container();
-            Parent.Rect = new Types.Rect();
-            Parent.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(new Types.Color(0xed143d));
-            Parent.StyleProperties.Border = new Core.Styles.StyleProperty<bool>(true);
-
-            Parent.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            Parent.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            Parent.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(1);
-            Parent.StyleProperties.AutoLayoutDirection = new Core.Styles.StyleProperty<Types.AutoLayoutDirection>(Types.AutoLayoutDirection.Column);
-
-
-
             Container1 = new Container();
-            Container1.Rect = new Types.Rect();
-            Container1.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(new Types.Color(0xef00ff));
-            Container1.StyleProperties.Border = new Core.Styles.StyleProperty<bool>(true);
-            Container1.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            Container1.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(50, Types.UnitValue<int>.Unit.Percent));
-            Container1.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(1);
+            Container1.Rect = new Rect();
+            Container1.StyleProperties.Color = new StyleProperty<Color>(new Color(0xa7007d));
+            Container1.StyleProperties.Border = new StyleProperty<bool>(true);
+
+            Container1.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
+            Container1.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(5, Unit.Char));
 
             Container2 = new Container();
-            Container2.Rect = new Types.Rect();
-            Container2.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(new Types.Color(0x6200ff));
-            Container2.StyleProperties.Border = new Core.Styles.StyleProperty<bool>(true);
-            Container2.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            Container2.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(4, Types.UnitValue<int>.Unit.Char));
+            Container2.Rect = new Rect();
+            Container2.StyleProperties.Color = new StyleProperty<Color>(new Color(0x6d00a7));
+            Container2.StyleProperties.Border = new StyleProperty<bool>(true);
+                     
+            Container2.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(4, Unit.Char));
+            Container2.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(5, Unit.Char));
 
             Container3 = new Container();
-            Container3.Rect = new Types.Rect();
-            Container3.StyleProperties.Color = new Core.Styles.StyleProperty<Types.Color>(new Types.Color(0x005aff));
-            Container3.StyleProperties.Border = new Core.Styles.StyleProperty<bool>(true);
-            Container3.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            Container3.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-
-
-            //Container1.AddElement(Container2);
-            Parent.AddElement(Container1);
-            Parent.AddElement(Container2);
-            Parent.AddElement(Container3);
+            Container3.Rect = new Rect();
+            Container3.StyleProperties.Color = new StyleProperty<Color>(new Color(0x3700a7));
+            Container3.StyleProperties.Border = new StyleProperty<bool>(true);
+                     
+            Container3.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
+            Container3.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(5, Unit.Char));
         }
 
         public override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.AddContent(Parent);
+            builder.AddContent(Container1);
+            builder.AddContent(Container2);
+            builder.AddContent(Container3);
         }
     }
 }

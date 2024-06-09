@@ -42,38 +42,16 @@ namespace Atlas.Services
 
             this.inputSystem.OnKeyPress += HandleKeyPress;
 
+            //mainContainer = new Container();
 
-            mainContainer = new Container();
-            mainContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            mainContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            mainContainer.StyleProperties.AutoLayoutDirection = new Core.Styles.StyleProperty<Types.AutoLayoutDirection>(Types.AutoLayoutDirection.Column);
-
-            windowsContainer = new Container();
-            windowsContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            windowsContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-
-            statusContainer = new Container();
-            statusContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            statusContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(1, Types.UnitValue<int>.Unit.Char));
-
-            inputContainer = new Container();
-            inputContainer.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            inputContainer.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(1, Types.UnitValue<int>.Unit.Char));
-
-            mainContainer.AddElement(windowsContainer);
-            mainContainer.AddElement(statusContainer);
-            mainContainer.AddElement(inputContainer);
-            inputContainer.AddElement(new InputSystemDebugLine());
-            statusContainer.AddElement(new StatusBar());
-
-
-            Unsafe.As<Renderer>(renderer).MountRenderable(mainContainer);
+            //Unsafe.As<Renderer>(renderer).MountRenderable(mainContainer);
         }
 
         public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect) where T : IComponent, new()
         {
             return CreateWindow<T>(windowRect, null);
         }
+
         public (string windowId, T windowComponent) CreateWindow<T>(Rect windowRect, WindowOptions? options) where T : IComponent, new()
         {
             if (FocusedWindow is not null)
@@ -92,8 +70,13 @@ namespace Atlas.Services
             FocusedWindow = new Window(windowRect, component, ShortIdGenerator.Generate(), options.Value);
             if (windowRect == Rect.Zero)
             {
-                FocusedWindow.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
-                FocusedWindow.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
+                FocusedWindow.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
+                FocusedWindow.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, Unit.Percent));
+            }
+            else
+            {
+                FocusedWindow.StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(windowRect.width, Unit.Char));
+                FocusedWindow.StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(windowRect.height, Unit.Char));
             }
             FocusedWindow.IsFocused = true;
             FocusedWindow.Title = options.Value.WindowTitle;
@@ -108,7 +91,7 @@ namespace Atlas.Services
                 }
                 if (options.Value.Frameless == false)
                 {
-                    FocusedWindow.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(1);
+                    FocusedWindow.StyleProperties.Padding = new Core.Styles.StyleProperty<int>(0);
                 }
                 if (options.Value.BorderColor.validColor)
                 {
@@ -117,8 +100,8 @@ namespace Atlas.Services
                 FocusedWindow.StyleProperties.Color = new Core.Styles.StyleProperty<Color>(windowBorderColor);
             }
 
-            //Unsafe.As<Renderer>(renderer).MountRenderable(FocusedWindow);
-            windowsContainer.AddElement(FocusedWindow);
+            Unsafe.As<Renderer>(renderer).MountRenderable(FocusedWindow);
+            //windowsContainer.AddElement(FocusedWindow);
             return (FocusedWindow.WindowId, component);
         }
 

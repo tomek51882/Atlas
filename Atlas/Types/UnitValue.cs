@@ -17,10 +17,10 @@ namespace Atlas.Types
             this.unit = unit;
         }
 
-        internal enum Unit
-        {
-            Char,
-            Percent
-        }
+    }
+    internal enum Unit
+    {
+        Char,
+        Percent
     }
 }

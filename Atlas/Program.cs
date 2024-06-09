@@ -29,4 +29,11 @@ var builder = Host.CreateDefaultBuilder(args)
 
 IHost app = builder.Build();
 
+//     ___   __  __          
+//    /   | / /_/ /___ ______
+//   / /| |/ __/ / __ `/ ___/
+//  / ___ / /_/ / /_/ (__  ) 
+// /_/  |_\__/_/\__,_/____/
+//
+
 await app.RunAsync();

@@ -46,11 +46,11 @@ namespace Atlas.Utils
             {
                 if (child.Value is IPrimitive primitive && primitive.StyleProperties.Height is not null)
                 {
-                    if (primitive.StyleProperties.Height.Value.unit == UnitValue<int>.Unit.Char)
+                    if (primitive.StyleProperties.Height.Value.unit == Unit.Char)
                     {
                         Add(new RecalculationRect(primitive.Rect.width, primitive.Rect.height, true));
                     }
-                    else if (primitive.StyleProperties.Height.Value.unit == UnitValue<int>.Unit.Percent)
+                    else if (primitive.StyleProperties.Height.Value.unit == Unit.Percent)
                     {
                         Add(new RecalculationRect(primitive.Rect.width, primitive.Rect.height, false));
                     }

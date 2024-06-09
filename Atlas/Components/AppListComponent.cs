@@ -7,6 +7,7 @@ using Atlas.Interfaces.Apps;
 using Atlas.Models.DTOs;
 using Atlas.Primitives;
 using Atlas.Services;
+using Atlas.Types;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
 
@@ -27,8 +28,8 @@ namespace Atlas.Components
 
         public override void OnInitialized()
         {
-            mySelect.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
-            mySelect.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Types.UnitValue<int>.Unit.Percent));
+            mySelect.StyleProperties.Width = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Unit.Percent));
+            mySelect.StyleProperties.Height = new Core.Styles.StyleProperty<Types.UnitValue<int>>(new Types.UnitValue<int>(100, Unit.Percent));
 
             mySelect.RowTemplate = (item, row) =>
             {

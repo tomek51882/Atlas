@@ -1,6 +1,7 @@
 ﻿
 using Atlas.Components;
 using Atlas.Interfaces.Renderables;
+using Atlas.Types;
 
 namespace Atlas.Core.Render
 {
@@ -15,6 +16,8 @@ namespace Atlas.Core.Render
         public bool IsInitialized { get; set; } = false;
         public bool NeedsRectRecalculation { get; set; } = true;
         public long Generation { get; set; }
+
+        public Rect ComputedRect = new Rect();
 
         public RenderTreeNode(IRenderable item)
         {

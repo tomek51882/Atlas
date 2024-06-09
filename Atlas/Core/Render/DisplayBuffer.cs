@@ -250,6 +250,35 @@ namespace Atlas.Core.Render
             }
         }
 
+        internal void DrawFrame(RenderContext context, Rect rect, Color borderColor)
+        {
+            var frameMap = WindowFrame.Window;
+            SetCursor(rect.x, rect.y);
+            Write(context, frameMap.fragmentMap[WindowFrameFragment.TopLeft], borderColor);
+            for (int i = 1; i < rect.width - 1; i++)
+            {
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
+            }
+            Write(context, frameMap.fragmentMap[WindowFrameFragment.TopRight], borderColor);
+
+            for (int j = 1; j < rect.height - 1; j++)
+            {
+                SetCursor(rect.x, rect.y + j);
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
+                SetCursor(rect.x + rect.width - 1, rect.y + j);
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Vertical], borderColor);
+            }
+
+            SetCursor(rect.x, rect.y + rect.height - 1);
+            Write(context, frameMap.fragmentMap[WindowFrameFragment.BottomLeft], borderColor);
+            for (int i = 1; i < rect.width - 1; i++)
+            {
+                Write(context, frameMap.fragmentMap[WindowFrameFragment.Horizontal], borderColor);
+            }
+
+            Write(context, frameMap.fragmentMap[WindowFrameFragment.BottomRight], borderColor);
+        }
+
         private int Translate(int x, int y)
         {
             return y * width + x;

@@ -12,6 +12,7 @@ namespace Atlas.Core
         private RenderTreeNode? currentNode;
         private RenderTreeNode parentNode;
         private Dictionary<IRenderable, RenderTreeNode> lookupNodes;
+        private Dictionary<IRenderable, RenderTreeNode> componentLookup;
         private long treeGeneration = 0;
 
         internal RenderTreeNode RenderTree { get; private set; }
@@ -20,16 +21,43 @@ namespace Atlas.Core
         public RenderTreeBuilder(Renderer renderer)
         {
             Renderer = renderer;
-            RenderTree = new RenderTreeNode(new VirtualRoot());
+            var root = new VirtualRoot();
+            RenderTree = new RenderTreeNode(root);
+            RenderTree.ComputedRect = new Rect(0,0, Console.BufferWidth, Console.BufferHeight);
             RenderTree.IsInitialized = true;
 
             parentNode = RenderTree;
             lookupNodes = new Dictionary<IRenderable, RenderTreeNode>();
+            componentLookup = new Dictionary<IRenderable, RenderTreeNode>();
         }
+
+        //NOTE: Think if components really need to be in this tree
+
+        //public void AddContent(IComponent component)
+        //{ 
+        //}
         public void AddContent(IRenderable? renderable)
         {
             if (renderable is null)
             {
+                return;
+            }
+
+            if (renderable is IComponent component)
+            {
+                if (componentLookup.TryGetValue(component, out RenderTreeNode? componentNode))
+                {
+                    componentNode.IsNew = false;
+                    componentNode.Generation = treeGeneration;
+                }
+                else
+                {
+                    componentNode = new RenderTreeNode(renderable);
+                    componentNode.Generation = treeGeneration;
+                    componentLookup.Add(component, componentNode);
+                    Renderer.EnqueueComponentInitialization(component);
+                    component.BuildRenderTree(this);
+                }
                 return;
             }
 
@@ -75,16 +103,16 @@ namespace Atlas.Core
                 parentNode = currentNode;
                 AddContent(window.Component);
             }
-            else if (renderable is IComponent component)
-            {
-                parentNode = currentNode;
-                if (currentNode.IsNew && currentNode.IsInitialized == false)
-                {
-                    currentNode.IsInitialized = true;
-                    Renderer.EnqueueComponentInitialization(component);
-                }
-                component.BuildRenderTree(this);
-            }
+            //else if (renderable is IComponent component)
+            //{
+            //    parentNode = currentNode;
+            //    if (currentNode.IsNew && currentNode.IsInitialized == false)
+            //    {
+            //        currentNode.IsInitialized = true;
+            //        Renderer.EnqueueComponentInitialization(component);
+            //    }
+            //    component.BuildRenderTree(this);
+            //}
 
             parentNode = preRecursionParent;
         }
@@ -101,10 +129,14 @@ namespace Atlas.Core
                 AddContent(component);
             }
 
+            var componentNodes = componentLookup
+                .Where(x => x.Value.Generation != treeGeneration)
+                .Select(x => x.Key);
+
             var unmountNodes = lookupNodes
                 .Where(x => x.Value.Generation != treeGeneration)
                 .Select(x => x.Key)
-                .ToList();
+                .Concat(componentNodes);
 
             foreach (var key in unmountNodes)
             {
@@ -117,6 +149,25 @@ namespace Atlas.Core
                 }
                 lookupNodes.Remove(key);
             }
+
+            //var unmountComponents = componentLookup
+            //    .Where(x => x.Value.Generation != treeGeneration)
+            //    .Select(x => x.Key)
+            //    .ToList();
+
+            //foreach (var key in unmountComponents)
+            //{
+            //    //Debugger.Break();
+            //    var unmountNode = lookupNodes[key];
+            //    unmountNode?.Parent?.Children.Remove(unmountNode);
+            //    if (unmountNode?.Value is not null)
+            //    {
+            //        Renderer.EnqueueDisposal(unmountNode.Value);
+            //    }
+            //    lookupNodes.Remove(key);
+            //}
+
+
             treeGeneration++;
         }
     }
@@ -131,8 +182,8 @@ namespace Atlas.Core
         {
             //Temp
             //Rect = new Rect(0,0,Console.BufferWidth, Console.BufferHeight);
-            StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
-            StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(100, UnitValue<int>.Unit.Percent));
+            StyleProperties.Width = new StyleProperty<UnitValue<int>>(new UnitValue<int>(Console.BufferWidth, Unit.Char));
+            StyleProperties.Height = new StyleProperty<UnitValue<int>>(new UnitValue<int>(Console.BufferHeight, Unit.Char));
         }
 
         public void AddElement(IRenderable child)
